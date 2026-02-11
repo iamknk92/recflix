@@ -21,13 +21,19 @@ from app.models.movie import movie_genres, movie_cast, movie_keywords, movie_cou
 
 
 def parse_list_string(value):
-    """Parse string representation of list"""
+    """Parse string representation of list or comma-separated string"""
     if pd.isna(value) or value == '[]' or value == '':
         return []
+    value = str(value).strip()
+    # Try Python list format first: ['a', 'b']
     try:
-        return ast.literal_eval(value)
+        result = ast.literal_eval(value)
+        if isinstance(result, list):
+            return result
     except (ValueError, SyntaxError):
-        return []
+        pass
+    # Fall back to comma-separated format: "a, b, c"
+    return [item.strip() for item in value.split(',') if item.strip()]
 
 
 def parse_date(value):
@@ -150,8 +156,8 @@ def load_data(csv_path: str):
             # Create movie
             movie = Movie(
                 id=movie_id,
-                title=row.get('title', ''),
-                title_ko=row.get('title_ko', ''),
+                title=row.get('title_ko_en', row.get('title', '')),
+                title_ko=row.get('title', ''),
                 certification=row.get('certification', '') if pd.notna(row.get('certification')) else None,
                 runtime=int(row['runtime']) if pd.notna(row.get('runtime')) and row['runtime'] > 0 else None,
                 vote_average=float(row['vote_average']) if pd.notna(row.get('vote_average')) else 0.0,

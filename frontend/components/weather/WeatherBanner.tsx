@@ -107,25 +107,39 @@ export default function WeatherBanner({
   );
 }
 
+// Stable random values to avoid SSR/CSR hydration mismatch
+const rainDrops = Array.from({ length: 15 }, (_, i) => ({
+  x: ((i * 37 + 13) % 100),
+  duration: 0.8 + (i % 5) * 0.08,
+  delay: (i * 0.13) % 2,
+}));
+
+const snowFlakes = Array.from({ length: 20 }, (_, i) => ({
+  x: ((i * 41 + 7) % 100),
+  xEnd: ((i * 53 + 19) % 100),
+  duration: 3 + (i % 5) * 0.4,
+  delay: (i * 0.15) % 3,
+}));
+
 // Rain animation component
 function RainAnimation() {
   return (
     <div className="absolute inset-0">
-      {[...Array(15)].map((_, i) => (
+      {rainDrops.map((drop, i) => (
         <motion.div
-          key={i}
+          key={`rain-${i}`}
           className="absolute h-6 md:h-8 w-0.5 bg-blue-300/50"
           initial={{
-            x: Math.random() * 100 + "%",
+            x: drop.x + "%",
             y: -20,
           }}
           animate={{
             y: "120%",
           }}
           transition={{
-            duration: 0.8 + Math.random() * 0.4,
+            duration: drop.duration,
             repeat: Infinity,
-            delay: Math.random() * 2,
+            delay: drop.delay,
             ease: "linear",
           }}
         />
@@ -138,22 +152,22 @@ function RainAnimation() {
 function SnowAnimation() {
   return (
     <div className="absolute inset-0">
-      {[...Array(20)].map((_, i) => (
+      {snowFlakes.map((flake, i) => (
         <motion.div
-          key={i}
+          key={`snow-${i}`}
           className="absolute h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-white/70"
           initial={{
-            x: Math.random() * 100 + "%",
+            x: flake.x + "%",
             y: -10,
           }}
           animate={{
             y: "120%",
-            x: `${Math.random() * 100}%`,
+            x: `${flake.xEnd}%`,
           }}
           transition={{
-            duration: 3 + Math.random() * 2,
+            duration: flake.duration,
             repeat: Infinity,
-            delay: Math.random() * 3,
+            delay: flake.delay,
             ease: "linear",
           }}
         />

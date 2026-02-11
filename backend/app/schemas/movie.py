@@ -115,7 +115,7 @@ class MovieDetail(MovieBase):
             genres=[GenreResponse.model_validate(g) for g in movie.genres],
             cast_members=[PersonResponse.model_validate(p) for p in movie.cast_members[:10]],
             keywords=[k.name for k in movie.keywords],
-            countries=[c.name for c in movie.countries],
+            countries=[c.strip() for c in (movie.production_countries_ko or "").split(",") if c.strip()] or [c.name for c in movie.countries],
             mbti_scores=movie.mbti_scores,
             weather_scores=movie.weather_scores,
             emotion_tags=movie.emotion_tags
