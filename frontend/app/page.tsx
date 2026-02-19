@@ -12,7 +12,7 @@ import type { HomeRecommendations, WeatherType, Movie, Weather, MoodType } from 
 
 export default function HomePage() {
   const [recommendations, setRecommendations] = useState<HomeRecommendations | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mood, setMood] = useState<MoodType | null>(null);
 
@@ -31,7 +31,6 @@ export default function HomePage() {
 
   const {
     weather,
-    loading: weatherLoading,
     isManual: isManualWeather,
     setManualWeather,
     resetToRealWeather,
@@ -62,13 +61,12 @@ export default function HomePage() {
   }, [weather]);
 
   // Fetch recommendations when weather, mood, or auth state changes
+  // 날씨 로드 여부와 무관하게 즉시 호출, 날씨 로드 완료 시 재호출
   useEffect(() => {
     const fetchRecommendations = async () => {
-      if (!weather) return;
-
       setLoading(true);
       try {
-        const data = await getHomeRecommendations(weather.condition, mood);
+        const data = await getHomeRecommendations(weather?.condition, mood);
         setRecommendations(data);
         setError(null);
       } catch (err) {
@@ -107,16 +105,7 @@ export default function HomePage() {
     return recommendations.featured ?? null;
   }, [isAuthenticated, recommendations]);
 
-  if (weatherLoading && loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">날씨 정보를 가져오는 중...</p>
-        </div>
-      </div>
-    );
-  }
+  // 전체화면 스피너 제거: 스켈레톤으로 대체 (아래 loading && !recommendations 조건)
 
   if (error && !recommendations) {
     return (
