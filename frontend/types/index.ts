@@ -156,3 +156,14 @@ export interface CatchphraseResponse {
   catchphrase: string;
   cached: boolean;
 }
+// 취향 분석 통계
+export interface RatingStats {
+  total_rated: number
+  total_favorites: number
+  average_score: number
+  genre_distribution: Record<string, number>
+  score_distribution: Record<string, number>
+  weather_genre_map: Record<string, Record<string, number>>
+  top_directors: string[]
+  top_actors: string[]
+}

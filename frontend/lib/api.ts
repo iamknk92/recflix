@@ -10,6 +10,7 @@ import type {
   Weather,
   RatingWithMovie,
   CatchphraseResponse,
+  RatingStats,
 } from "@/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
@@ -239,4 +240,8 @@ export async function searchAutocomplete(query: string, limit = 8): Promise<Auto
 // LLM APIs
 export async function getCatchphrase(movieId: number): Promise<CatchphraseResponse> {
   return fetchAPI<CatchphraseResponse>(`/llm/catchphrase/${movieId}`);
+}
+// 취향 분석 통계
+export const fetchRatingStats = async (): Promise<RatingStats> => {
+  return fetchAPI<RatingStats>('/ratings/stats')
 }
