@@ -118,6 +118,20 @@ export const useInteractionStore = create<InteractionState>()((set, get) => ({
   setRating: async (movieId: number, score: number) => {
     const current = get().interactions[movieId];
 
+    // 날씨 컨텍스트 자동 주입 (localStorage 캐시에서 읽기)
+    let weatherContext: string | undefined;
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("recflix_weather");
+        if (cached) {
+          const { data } = JSON.parse(cached);
+          weatherContext = data?.condition;
+        }
+      } catch {
+        // 캐시 읽기 실패 시 무시
+      }
+    }
+
     // Optimistic update
     set((state) => ({
       interactions: {
@@ -132,7 +146,7 @@ export const useInteractionStore = create<InteractionState>()((set, get) => ({
     }));
 
     try {
-      await api.rateMovie(movieId, score);
+      await api.rateMovie(movieId, score, weatherContext);
     } catch (error) {
       // Rollback on error
       set((state) => ({
