@@ -6,6 +6,37 @@ All notable changes to RecFlix will be documented in this file.
 
 ---
 
+## [2026-02-19]
+
+### Added
+- **내 취향 분석 페이지** (`/my-taste`): 사용자 평점 기반 취향 대시보드
+  - `GenreDonutChart` - 선호 장르 도넛 차트 (4점 이상 평점 기준)
+  - `ScoreBarChart` - 별점 분포 막대 차트
+  - `WeatherRadarChart` - 날씨별 선호 장르 레이더 차트
+  - `StatsSummaryCards` - 총 평가 수 / 찜 수 / 평균 별점 요약 카드
+  - `TopCreatorsSection` - 자주 본 감독/배우 Top 3
+- **`GET /api/v1/ratings/stats`** 엔드포인트: 장르 분포, 별점 분포, 날씨별 장르 맵, 감독/배우 Top 3
+- **빈 상태(Empty State) UX**: 비로그인 → 로그인 유도 / 평점 5편 미만 → 진행률 바 표시 (Framer Motion)
+- **weather_context 자동 주입**: 평점 저장 시 `localStorage("recflix_weather")` 캐시에서 날씨 자동 주입
+- **헤더 "내 취향 분석" 메뉴**: `Header.tsx`에 `/my-taste` 링크 추가
+
+### Fixed
+- **메인 페이지 로딩 멈춤**: 날씨 로드(지오로케이션 최대 5초)를 기다리지 않고 즉시 추천 API 호출
+  - `if (!weather) return` 제거 → `weather?.condition` 사용
+  - `loading` 초기값 `true` → `false`, 전체화면 스피너 제거
+  - 즉시 스켈레톤 rows 표시 후 ~1s 내 콘텐츠 렌더
+- **Next.js 빌드 캐시 깨짐**: `npm run build`와 dev 서버 동시 실행 시 `.next` 충돌 문제 정립
+  - `npm run build` 전 dev 서버 반드시 종료 필요
+
+### Changed
+- **`next.config.js`**: `transpilePackages: ["recharts"]` 추가 — Vercel 프로덕션 빌드 ESM 호환
+- **`frontend/lib/utils.ts`**: `getImageUrl`, `formatDate`, `formatRuntime`, `formatScore` 유틸 생성
+- **`frontend/lib/api.ts`**: `fetchRatingStats()` 함수 추가
+- **`frontend/types/index.ts`**: `RatingStats` 타입 추가
+- **`frontend/stores/interactionStore.ts`**: `setRating()` 내 weather_context 자동 주입 로직 추가
+
+---
+
 ## [2026-02-10]
 
 ### Added

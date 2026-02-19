@@ -3,6 +3,9 @@ const nextConfig = {
   // Enable standalone output for Docker deployment
   output: "standalone",
 
+  // recharts v3 uses ESM - transpile for Next.js compatibility
+  transpilePackages: ["recharts"],
+
   images: {
     remotePatterns: [
       {

@@ -1,6 +1,6 @@
 # RecFlix 개발 진행 상황
 
-**최종 업데이트**: 2026-02-10
+**최종 업데이트**: 2026-02-19
 
 ---
 
@@ -171,6 +171,24 @@
 | Railway 백엔드 재배포 | ✅ | CORS 설정 반영 |
 | README 도메인 업데이트 | ✅ | 새 프론트엔드 URL 반영 |
 
+### Phase 14: 내 취향 분석 페이지 & UX 개선 (2026-02-19)
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| GET /ratings/stats 엔드포인트 | ✅ | 장르/별점/날씨/감독/배우 통계 |
+| /my-taste 페이지 | ✅ | 취향 분석 대시보드 |
+| GenreDonutChart | ✅ | recharts, 선호 장르 도넛 차트 |
+| ScoreBarChart | ✅ | recharts, 별점 분포 막대 차트 |
+| WeatherRadarChart | ✅ | recharts, 날씨별 선호 장르 레이더 |
+| StatsSummaryCards | ✅ | 총 평가/찜/평균 별점 요약 카드 |
+| TopCreatorsSection | ✅ | 자주 본 감독/배우 Top 3 |
+| 빈 상태(Empty State) UX | ✅ | 비로그인/평점 부족/진행률 바 |
+| weather_context 자동 주입 | ✅ | 평점 저장 시 localStorage 캐시 활용 |
+| 헤더 "내 취향 분석" 메뉴 | ✅ | Header.tsx 링크 추가 |
+| 메인 페이지 로딩 멈춤 수정 | ✅ | 날씨 대기 제거, 스켈레톤 즉시 표시 |
+| Next.js 빌드 캐시 깨짐 해결 | ✅ | dev/build 동시 실행 금지 규칙 정립 |
+| recharts transpilePackages 추가 | ✅ | Vercel 프로덕션 빌드 호환성 |
+
 ### Phase 13: 신규 데이터 마이그레이션 (2026-02-10)
 
 | 항목 | 상태 | 비고 |
@@ -339,6 +357,12 @@ WEATHER_API_KEY=e9fcc611acf478ac0ac1e7bddeaea70e
 - [x] **Movie 모델 6컬럼 추가** (director, cast_ko, release_season 등) (2026-02-10)
 - [x] **점수 데이터 100% 재생성** (emotion/mbti/weather) (2026-02-10)
 - [x] **프로덕션 DB 복원** (pg_dump → pg_restore) (2026-02-10)
+
+- [x] **내 취향 분석 페이지** (`/my-taste`) (2026-02-19)
+- [x] **GET /ratings/stats** 백엔드 엔드포인트 (2026-02-19)
+- [x] **weather_context 자동 주입** (평점 저장 시) (2026-02-19)
+- [x] **메인 페이지 로딩 멈춤 수정** (날씨 대기 제거) (2026-02-19)
+- [x] **recharts Vercel 호환성** (transpilePackages) (2026-02-19)
 
 ### 향후 개선사항
 - [ ] 소셜 로그인 (Google, Kakao)
