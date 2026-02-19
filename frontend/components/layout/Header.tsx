@@ -84,6 +84,7 @@ export default function Header() {
   const authNavItems = [
     { href: "/favorites", label: "찜 목록", icon: Heart },
     { href: "/ratings", label: "내 평점", icon: Star },
+    { href: "/my-taste", label: "내 취향 분석", icon: User },
   ];
 
   const isActivePath = (path: string) => {
