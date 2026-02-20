@@ -13,13 +13,13 @@ from app.models import *  # noqa: F401, F403 - Import all models for table creat
 # Initialize Sentry before app creation (only when DSN is configured)
 if settings.SENTRY_DSN:
     import sentry_sdk
-    from sentry_sdk.integrations.fastapi import FastApiIntegration
     from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+    # FastApiIntegration은 sentry-sdk 2.x에서 request body를 소비하는 버그가 있어 제외
+    # sentry-sdk 2.x는 FastAPI를 자동 감지하므로 명시적으로 추가 불필요
     sentry_sdk.init(
         dsn=settings.SENTRY_DSN,
         integrations=[
-            FastApiIntegration(),
             SqlalchemyIntegration(),
         ],
         traces_sample_rate=0.1,

@@ -67,7 +67,7 @@ def get_current_user(
 
     if settings.SENTRY_DSN:
         import sentry_sdk
-        sentry_sdk.set_user({"id": str(user.id), "username": user.username})
+        sentry_sdk.set_user({"id": str(user.id), "email": user.email})
 
     return user
 
