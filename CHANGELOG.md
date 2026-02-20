@@ -6,7 +6,38 @@ All notable changes to RecFlix will be documented in this file.
 
 ---
 
-## [2026-02-20]
+## [2026-02-20] — 2차 업데이트
+
+### Added
+- **MBTI 궁합 추천 기능**
+  - `backend/app/data/mbti_compatibility.py`: 4축(E/I, S/N, T/F, J/P) 기반 궁합 점수(0~100) 계산 모듈
+    - INTJ×ENFP, INFJ×ENTP 등 10개 특별 조합 커스텀 설명 포함
+  - `GET /api/v1/recommendations/match?mbti1=INTJ&mbti2=ENFP`: 두 MBTI 모두 만족하는 영화 추천 API
+  - `frontend/app/match/page.tsx`: MBTI 궁합 추천 페이지
+    - 4축 토글 방식 MBTI 선택 (E↔I, S↔N, T↔F, J↔P)
+    - SVG 링 차트로 궁합 점수 시각화
+    - 영화 카드에 mbti1/mbti2 점수 바 표시
+    - INTJ×ENFP 등 유명 조합 퀵 예시 버튼 4개
+  - `frontend/lib/api.ts`: `getMatchRecommendations()` 함수 추가
+  - `frontend/components/layout/Header.tsx`: 로그인 시 "MBTI 궁합" 메뉴 노출
+
+### Fixed
+- **로그인 불가 버그** (`deps.py`)
+  - `sentry_sdk.set_user({"username": user.username})` — User 모델에 없는 `username` 속성 참조
+  - → `user.email`로 수정. 로그인 후 `/users/me` 등 모든 인증 엔드포인트 500 오류 해결
+- **회원가입/로그인 400 오류** (`main.py`)
+  - sentry-sdk 2.x `FastApiIntegration`이 request body stream을 먼저 소비 → FastAPI가 body를 읽지 못해 `400 "There was an error parsing the body"` 반환
+  - → `FastApiIntegration()` 제거 (sentry-sdk 2.x는 FastAPI 자동 감지)
+
+### Changed
+- **MBTI 궁합 추천 알고리즘 개선** (`recommendations.py`)
+  - 후보 풀: `popularity >= 10`, `vote_count >= 500` 필터 (부족 시 5/300 fallback)
+  - 스코어 재설계: MBTI 매치 60% + 인기도(log 정규화) 25% + 품질(weighted_score) 15% - 편차 패널티
+  - 효과: 저인기 영화 → 나이브스 아웃, 아바타, 어벤져스 등 인지도 있는 영화로 개선
+
+---
+
+## [2026-02-20] — 1차 업데이트
 
 ### Added
 - **PWA 지원**: `next-pwa` 기반 Service Worker, 오프라인 페이지, 앱 아이콘

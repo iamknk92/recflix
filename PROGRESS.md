@@ -1,6 +1,6 @@
 # RecFlix 개발 진행 상황
 
-**최종 업데이트**: 2026-02-19
+**최종 업데이트**: 2026-02-20
 
 ---
 
@@ -183,10 +183,25 @@
 | 프론트 Sentry 연동 | ✅ | instrumentation.ts, instrumentation-client.ts |
 | global-error.tsx | ✅ | React 렌더링 에러 캡처 |
 | Session Replay | ✅ | 에러 100%, 평소 5% |
-| 백엔드 Sentry 연동 | ✅ | FastApiIntegration, SqlalchemyIntegration, set_user() |
+| 백엔드 Sentry 연동 | ✅ | SqlalchemyIntegration, set_user() |
 | Sentry DSN 설정 | ✅ | 로컬 .env, Vercel 환경변수, Railway 환경변수 |
 | GitHub Actions CI/CD 완성 | ✅ | amondnet/vercel-action@v25, main push → 자동 배포 |
 | 프로덕션 검증 | ✅ | 전체 URL 200 OK, sw.js 정상 동작 확인 |
+
+### Phase 16: MBTI 궁합 추천 + 버그 수정 (2026-02-20)
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| MBTI 궁합 점수 모듈 | ✅ | `backend/app/data/mbti_compatibility.py` — 4축 기반 0~100점 |
+| 특별 조합 설명 | ✅ | INTJ×ENFP 등 10개 유명 조합 커스텀 설명 |
+| `/recommendations/match` API | ✅ | 두 MBTI 평균 점수 기반 영화 추천 |
+| 추천 알고리즘 개선 | ✅ | MBTI 60% + 인기도 25% + 품질 15%, popularity/vote_count 필터 |
+| `/match` 프론트엔드 페이지 | ✅ | 4축 토글 MBTI 선택, 궁합 링 차트, 영화 그리드 |
+| MBTI 퀵 예시 버튼 | ✅ | 4가지 유명 궁합 조합 바로 적용 |
+| 헤더 "MBTI 궁합" 메뉴 | ✅ | 로그인 시 노출 |
+| `getMatchRecommendations` API | ✅ | `frontend/lib/api.ts` 함수 추가 |
+| 로그인 불가 버그 수정 | ✅ | `user.username` → `user.email` (AttributeError) |
+| FastApiIntegration 제거 | ✅ | sentry-sdk 2.x request body 소비 버그 해결 |
 
 ### Phase 14: 내 취향 분석 페이지 & UX 개선 (2026-02-19)
 
@@ -388,6 +403,10 @@ WEATHER_API_KEY=e9fcc611acf478ac0ac1e7bddeaea70e
 - [x] **Sentry 백엔드 연동** (FastAPI + SQLAlchemy 통합) (2026-02-20)
 - [x] **GitHub Actions CI/CD 완성** (amondnet/vercel-action@v25) (2026-02-20)
 
+- [x] **MBTI 궁합 추천 기능** (`/match` 페이지, `/recommendations/match` API) (2026-02-20)
+- [x] **추천 알고리즘 개선** (인기도 가중치 반영, 저인기 영화 필터) (2026-02-20)
+- [x] **로그인 버그 수정** (Sentry user.username AttributeError + FastApiIntegration body 소비) (2026-02-20)
+
 ### 향후 개선사항
 - [ ] 소셜 로그인 (Google, Kakao)
 - [x] **PWA 지원** (Service Worker, 오프라인 페이지) (2026-02-20)
@@ -412,3 +431,5 @@ WEATHER_API_KEY=e9fcc611acf478ac0ac1e7bddeaea70e
 12. **무한스크롤 중단**: callback ref 패턴 + refs로 stale closure 방지 (2026-02-04)
 13. **offline/page.tsx 빌드 에러**: `onClick` 있는데 `"use client"` 누락 → Server Component 충돌 (2026-02-20)
 14. **GitHub Actions Vercel 배포 실패**: `vercel pull --token` 팀 인증 안 됨 → `amondnet/vercel-action@v25`으로 해결 (2026-02-20)
+15. **로그인 불가 (AttributeError)**: `deps.py`에서 `user.username` 참조 → User 모델에 없는 속성 → `user.email`로 수정 (2026-02-20)
+16. **회원가입/로그인 400 오류**: sentry-sdk 2.x `FastApiIntegration`이 request body stream 소비 → 제거로 해결 (2026-02-20)
