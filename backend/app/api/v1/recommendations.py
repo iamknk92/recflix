@@ -789,23 +789,41 @@ def match_recommendations(
     # 궁합 점수 계산
     compatibility = calculate_compatibility(mbti1, mbti2)
 
-    # 두 MBTI 스코어를 모두 가진 영화 조회 (품질 필터 적용)
+    # 후보 풀: 인기도 상위 영화로 제한 (popularity >= 10, vote_count >= 500)
+    # → 충분한 대중 인지도를 가진 영화만 추천 대상으로 삼음
     movies = db.query(Movie).filter(
         Movie.mbti_scores.isnot(None),
-        Movie.weighted_score >= 6.0,
-    ).all()
+        Movie.weighted_score >= 6.5,
+        Movie.vote_count >= 500,
+        Movie.popularity >= 10.0,
+    ).order_by(desc(Movie.popularity)).limit(800).all()
 
-    # 두 MBTI의 평균 점수 계산 + 편차 패널티 적용
+    # 후보가 부족하면 기준 완화 (popularity >= 5, vote_count >= 300)
+    if len(movies) < limit * 3:
+        movies = db.query(Movie).filter(
+            Movie.mbti_scores.isnot(None),
+            Movie.weighted_score >= 6.5,
+            Movie.vote_count >= 300,
+            Movie.popularity >= 5.0,
+        ).order_by(desc(Movie.popularity)).limit(800).all()
+
+    import math
+
+    # 스코어 계산: MBTI 매치 60% + 인기도 25% + 품질 15% - 편차 패널티
     scored = []
     for m in movies:
         scores = m.mbti_scores or {}
-        s1 = scores.get(mbti1, 0)
-        s2 = scores.get(mbti2, 0)
+        s1 = float(scores.get(mbti1, 0) or 0)
+        s2 = float(scores.get(mbti2, 0) or 0)
         if s1 <= 0 or s2 <= 0:
             continue
         avg = (s1 + s2) / 2
-        diff_penalty = abs(s1 - s2) * 0.3  # 편차가 크면 감점
-        match_score = avg - diff_penalty
+        diff_penalty = abs(s1 - s2) * 0.3
+        # weighted_score 6.5~10 → 0~1 품질 점수
+        quality = min((m.weighted_score - 6.0) / 4.0, 1.0) if m.weighted_score else 0.0
+        # popularity log 정규화 (1~500 범위 기준): log(pop)/log(500) → 0~1
+        pop_score = min(math.log(max(m.popularity, 1)) / math.log(500), 1.0)
+        match_score = (avg * 0.60) + (pop_score * 0.25) + (quality * 0.15) - (diff_penalty * 0.1)
         scored.append((m, s1, s2, round(match_score, 4)))
 
     scored.sort(key=lambda x: x[3], reverse=True)
