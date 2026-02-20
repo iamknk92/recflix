@@ -10,6 +10,22 @@ from app.api.v1.router import api_router
 from app.database import engine, Base
 from app.models import *  # noqa: F401, F403 - Import all models for table creation
 
+# Initialize Sentry before app creation (only when DSN is configured)
+if settings.SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+    from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        integrations=[
+            FastApiIntegration(),
+            SqlalchemyIntegration(),
+        ],
+        traces_sample_rate=0.1,
+        environment=settings.APP_ENV,
+    )
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

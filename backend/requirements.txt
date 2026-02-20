@@ -35,6 +35,9 @@ anthropic>=0.42.0
 pandas>=2.2.0
 numpy>=2.0.0
 
+# Monitoring
+sentry-sdk[fastapi]>=1.45.0
+
 # Utilities
 python-dotenv>=1.0.0
 

@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
 
+    # Monitoring
+    SENTRY_DSN: str = ""
+
     # CORS - supports comma-separated string from environment
     CORS_ORIGINS: Union[str, List[str]] = "http://localhost:3000,http://127.0.0.1:3000"
 

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models import User
 from app.core.security import decode_token
+from app.config import settings
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
@@ -63,6 +64,10 @@ def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Inactive user"
         )
+
+    if settings.SENTRY_DSN:
+        import sentry_sdk
+        sentry_sdk.set_user({"id": str(user.id), "username": user.username})
 
     return user
 
