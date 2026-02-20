@@ -6,6 +6,47 @@ All notable changes to RecFlix will be documented in this file.
 
 ---
 
+## [2026-02-20]
+
+### Added
+- **PWA 지원**: `next-pwa` 기반 Service Worker, 오프라인 페이지, 앱 아이콘
+  - `public/sw.js` 자동 생성 (빌드 시)
+  - `app/offline/page.tsx` - 오프라인 안내 페이지 + 재시도 버튼
+  - `public/icons/icon-192.png`, `icon-512.png` - PWA 아이콘
+  - `public/manifest.json` - 앱 이름, 테마 색상(`#e50914`), standalone 모드
+  - 런타임 캐싱: API NetworkFirst(5분), TMDB 이미지 CacheFirst(7일), JS/CSS StaleWhileRevalidate
+  - 오프라인 폴백: `fallbacks.document = "/offline"`
+- **Sentry 에러 모니터링 - 프론트엔드** (Next.js 14 App Router 규약)
+  - `instrumentation.ts` - 서버/엣지 Sentry 초기화 (`register()` 함수)
+  - `instrumentation-client.ts` - 클라이언트 초기화 + Session Replay(에러 100%, 평소 5%) + `onRouterTransitionStart`
+  - `app/global-error.tsx` - React 렌더링 에러 캡처 및 복구 UI
+- **Sentry 에러 모니터링 - 백엔드** (FastAPI)
+  - `sentry-sdk[fastapi]>=1.45.0` 추가
+  - `FastApiIntegration` + `SqlalchemyIntegration` (DSN 있을 때만 초기화)
+  - `get_current_user`에서 `sentry_sdk.set_user()` 호출 (에러 시 사용자 추적)
+  - `SENTRY_DSN` 환경변수: 로컬 `.env`, Vercel, Railway 모두 설정
+
+### Fixed
+- **`offline/page.tsx` 빌드 에러**: `onClick` 핸들러가 있는 Server Component → `"use client"` 추가
+- **GitHub Actions CI/CD**: `vercel pull --token` 팀 인증 실패 반복
+  - `amondnet/vercel-action@v25` 마켓플레이스 액션으로 교체 후 해결
+
+### Changed
+- **`next.config.js`**: `fallbacks: { document: "/offline" }` 추가 (PWA 오프라인 폴백)
+- **`frontend/.gitignore`**: `public/fallback-*.js` 빌드 아티팩트 제외 추가
+- **`sentry.{client,server,edge}.config.ts`** 삭제 → `instrumentation.ts`, `instrumentation-client.ts`로 대체
+- **`.github/workflows/vercel-deploy.yml`**: `amondnet/vercel-action@v25` 사용, VERCEL_TOKEN 진단 스텝 추가
+
+### Technical Details
+- `frontend/instrumentation.ts` - Next.js 14 서버/엣지 Sentry 초기화
+- `frontend/instrumentation-client.ts` - 클라이언트 Sentry + Session Replay
+- `frontend/app/global-error.tsx` - React 전역 에러 바운더리
+- `backend/app/main.py` - Sentry FastAPI/SQLAlchemy 통합
+- `backend/app/core/deps.py` - 로그인 사용자 Sentry 컨텍스트 설정
+- `.github/workflows/vercel-deploy.yml` - CI/CD 최종 완성
+
+---
+
 ## [2026-02-19]
 
 ### Added
@@ -19,6 +60,9 @@ All notable changes to RecFlix will be documented in this file.
 - **빈 상태(Empty State) UX**: 비로그인 → 로그인 유도 / 평점 5편 미만 → 진행률 바 표시 (Framer Motion)
 - **weather_context 자동 주입**: 평점 저장 시 `localStorage("recflix_weather")` 캐시에서 날씨 자동 주입
 - **헤더 "내 취향 분석" 메뉴**: `Header.tsx`에 `/my-taste` 링크 추가
+- **GitHub Actions CI/CD** (`.github/workflows/vercel-deploy.yml`): `main` push 시 Vercel 프로덕션 자동 배포
+  - `VERCEL_TOKEN` GitHub Secret 기반 인증
+  - `namkyungs-projects/jnsquery-reflix` 프로젝트 타겟
 
 ### Fixed
 - **메인 페이지 로딩 멈춤**: 날씨 로드(지오로케이션 최대 5초)를 기다리지 않고 즉시 추천 API 호출
@@ -34,6 +78,7 @@ All notable changes to RecFlix will be documented in this file.
 - **`frontend/lib/api.ts`**: `fetchRatingStats()` 함수 추가
 - **`frontend/types/index.ts`**: `RatingStats` 타입 추가
 - **`frontend/stores/interactionStore.ts`**: `setRating()` 내 weather_context 자동 주입 로직 추가
+- **프로덕션 프론트엔드 URL**: `https://jnsquery-reflix-eight.vercel.app` (Vercel 팀 프로젝트 재배포)
 
 ---
 

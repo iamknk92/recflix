@@ -171,6 +171,23 @@
 | Railway 백엔드 재배포 | ✅ | CORS 설정 반영 |
 | README 도메인 업데이트 | ✅ | 새 프론트엔드 URL 반영 |
 
+### Phase 15: PWA + Sentry 모니터링 + CI/CD (2026-02-20)
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| PWA Service Worker | ✅ | next-pwa, sw.js 자동 생성 |
+| 오프라인 페이지 | ✅ | `/offline` fallback |
+| PWA 아이콘 | ✅ | 192x192, 512x512 |
+| manifest.json | ✅ | 앱 이름, 테마 색상, 아이콘 |
+| 런타임 캐싱 | ✅ | API(NetworkFirst), 이미지(CacheFirst), JS/CSS(SWR) |
+| 프론트 Sentry 연동 | ✅ | instrumentation.ts, instrumentation-client.ts |
+| global-error.tsx | ✅ | React 렌더링 에러 캡처 |
+| Session Replay | ✅ | 에러 100%, 평소 5% |
+| 백엔드 Sentry 연동 | ✅ | FastApiIntegration, SqlalchemyIntegration, set_user() |
+| Sentry DSN 설정 | ✅ | 로컬 .env, Vercel 환경변수, Railway 환경변수 |
+| GitHub Actions CI/CD 완성 | ✅ | amondnet/vercel-action@v25, main push → 자동 배포 |
+| 프로덕션 검증 | ✅ | 전체 URL 200 OK, sw.js 정상 동작 확인 |
+
 ### Phase 14: 내 취향 분석 페이지 & UX 개선 (2026-02-19)
 
 | 항목 | 상태 | 비고 |
@@ -188,6 +205,7 @@
 | 메인 페이지 로딩 멈춤 수정 | ✅ | 날씨 대기 제거, 스켈레톤 즉시 표시 |
 | Next.js 빌드 캐시 깨짐 해결 | ✅ | dev/build 동시 실행 금지 규칙 정립 |
 | recharts transpilePackages 추가 | ✅ | Vercel 프로덕션 빌드 호환성 |
+| GitHub Actions CI/CD | ✅ | main push 시 Vercel 자동 배포 (.github/workflows/vercel-deploy.yml) |
 
 ### Phase 13: 신규 데이터 마이그레이션 (2026-02-10)
 
@@ -248,7 +266,8 @@ C:\dev\recflix\
 │   │   ├── movies/page.tsx
 │   │   ├── movies/[id]/page.tsx
 │   │   ├── favorites/page.tsx
-│   │   └── ratings/page.tsx
+│   │   ├── ratings/page.tsx
+│   │   └── my-taste/page.tsx
 │   ├── components/
 │   │   ├── layout/
 │   │   │   ├── Header.tsx
@@ -286,10 +305,10 @@ C:\dev\recflix\
 
 | 서비스 | URL |
 |--------|-----|
-| Frontend (Vercel) | https://jnsquery-reflix.vercel.app |
+| Frontend (Vercel) | https://jnsquery-reflix-eight.vercel.app |
 | Backend API (Railway) | https://backend-production-cff2.up.railway.app |
 | API Docs | https://backend-production-cff2.up.railway.app/docs |
-| GitHub | https://github.com/sky1522/recflix |
+| GitHub | https://github.com/iamknk92/recflix |
 
 ---
 
@@ -364,11 +383,16 @@ WEATHER_API_KEY=e9fcc611acf478ac0ac1e7bddeaea70e
 - [x] **메인 페이지 로딩 멈춤 수정** (날씨 대기 제거) (2026-02-19)
 - [x] **recharts Vercel 호환성** (transpilePackages) (2026-02-19)
 
+- [x] **PWA 완성** (sw.js, offline page, icons, manifest) (2026-02-20)
+- [x] **Sentry 프론트엔드 연동** (instrumentation.ts, global-error.tsx) (2026-02-20)
+- [x] **Sentry 백엔드 연동** (FastAPI + SQLAlchemy 통합) (2026-02-20)
+- [x] **GitHub Actions CI/CD 완성** (amondnet/vercel-action@v25) (2026-02-20)
+
 ### 향후 개선사항
 - [ ] 소셜 로그인 (Google, Kakao)
-- [ ] PWA 지원
-- [ ] CI/CD 파이프라인 (GitHub Actions)
-- [ ] 모니터링/로깅 설정 (Sentry 등)
+- [x] **PWA 지원** (Service Worker, 오프라인 페이지) (2026-02-20)
+- [x] **CI/CD 파이프라인** (GitHub Actions + amondnet/vercel-action) (2026-02-20)
+- [x] **모니터링/로깅 설정** (Sentry 프론트 + 백엔드) (2026-02-20)
 
 ---
 
@@ -386,3 +410,5 @@ WEATHER_API_KEY=e9fcc611acf478ac0ac1e7bddeaea70e
 10. **Windows nul 파일 충돌**: 예약된 파일명 삭제 후 Railway 배포 진행
 11. **Redis 프로덕션 연결**: `REDIS_URL` 환경변수 사용 → `aioredis.from_url()` (2026-02-04)
 12. **무한스크롤 중단**: callback ref 패턴 + refs로 stale closure 방지 (2026-02-04)
+13. **offline/page.tsx 빌드 에러**: `onClick` 있는데 `"use client"` 누락 → Server Component 충돌 (2026-02-20)
+14. **GitHub Actions Vercel 배포 실패**: `vercel pull --token` 팀 인증 안 됨 → `amondnet/vercel-action@v25`으로 해결 (2026-02-20)
