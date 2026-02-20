@@ -25,6 +25,8 @@ jobs:
       - name: Pull Vercel Environment
         run: |
           vercel pull --yes --environment=production \
+            --project jnsquery-reflix \
+            --scope namkyungs-projects \
             --token ${{ secrets.VERCEL_TOKEN }}
         working-directory: ./frontend
 
