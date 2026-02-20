@@ -16,6 +16,7 @@ from app.schemas import MovieListItem, RecommendationRow, HomeRecommendations
 from app.schemas.recommendation import (
     HybridMovieItem, HybridRecommendationRow, RecommendationTag
 )
+from app.data.mbti_compatibility import calculate_compatibility
 
 router = APIRouter(prefix="/recommendations", tags=["Recommendations"])
 
@@ -759,3 +760,72 @@ def get_personalized_recommendations(
                 break
 
     return [MovieListItem.from_orm_with_genres(m) for m in result]
+
+
+@router.get("/match")
+def match_recommendations(
+    mbti1: str = Query(..., min_length=4, max_length=4, description="첫 번째 MBTI"),
+    mbti2: str = Query(..., min_length=4, max_length=4, description="두 번째 MBTI"),
+    limit: int = Query(10, ge=1, le=20),
+    db: Session = Depends(get_db),
+):
+    """
+    두 MBTI 유형의 궁합 점수 및 둘 다 좋아할 영화 추천.
+    두 MBTI 스코어 평균이 높고, 스코어 편차가 낮은 영화를 우선 추천.
+    """
+    mbti1 = mbti1.upper()
+    mbti2 = mbti2.upper()
+
+    VALID = {
+        "INTJ", "INTP", "ENTJ", "ENTP",
+        "INFJ", "INFP", "ENFJ", "ENFP",
+        "ISTJ", "ISFJ", "ESTJ", "ESFJ",
+        "ISTP", "ISFP", "ESTP", "ESFP",
+    }
+    if mbti1 not in VALID or mbti2 not in VALID:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="유효하지 않은 MBTI 유형입니다.")
+
+    # 궁합 점수 계산
+    compatibility = calculate_compatibility(mbti1, mbti2)
+
+    # 두 MBTI 스코어를 모두 가진 영화 조회 (품질 필터 적용)
+    movies = db.query(Movie).filter(
+        Movie.mbti_scores.isnot(None),
+        Movie.weighted_score >= 6.0,
+    ).all()
+
+    # 두 MBTI의 평균 점수 계산 + 편차 패널티 적용
+    scored = []
+    for m in movies:
+        scores = m.mbti_scores or {}
+        s1 = scores.get(mbti1, 0)
+        s2 = scores.get(mbti2, 0)
+        if s1 <= 0 or s2 <= 0:
+            continue
+        avg = (s1 + s2) / 2
+        diff_penalty = abs(s1 - s2) * 0.3  # 편차가 크면 감점
+        match_score = avg - diff_penalty
+        scored.append((m, s1, s2, round(match_score, 4)))
+
+    scored.sort(key=lambda x: x[3], reverse=True)
+    top = scored[:limit * 3]
+    random.shuffle(top)
+    top = top[:limit]
+    top.sort(key=lambda x: x[3], reverse=True)
+
+    movie_list = []
+    for m, s1, s2, match_score in top:
+        item = MovieListItem.from_orm_with_genres(m)
+        item_dict = item.dict()
+        item_dict["mbti1_score"] = round(s1 * 100)
+        item_dict["mbti2_score"] = round(s2 * 100)
+        item_dict["match_score"] = round(match_score * 100)
+        movie_list.append(item_dict)
+
+    return {
+        "mbti1": mbti1,
+        "mbti2": mbti2,
+        "compatibility": compatibility,
+        "movies": movie_list,
+    }

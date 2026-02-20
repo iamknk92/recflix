@@ -245,3 +245,30 @@ export async function getCatchphrase(movieId: number): Promise<CatchphraseRespon
 export const fetchRatingStats = async (): Promise<RatingStats> => {
   return fetchAPI<RatingStats>('/ratings/stats')
 }
+
+// MBTI 궁합 추천
+export interface MatchMovie extends Movie {
+  mbti1_score: number;
+  mbti2_score: number;
+  match_score: number;
+}
+
+export interface MatchResponse {
+  mbti1: string;
+  mbti2: string;
+  compatibility: {
+    score: number;
+    description: string;
+  };
+  movies: MatchMovie[];
+}
+
+export async function getMatchRecommendations(
+  mbti1: string,
+  mbti2: string,
+  limit = 10
+): Promise<MatchResponse> {
+  return fetchAPI<MatchResponse>(
+    `/recommendations/match?mbti1=${mbti1}&mbti2=${mbti2}&limit=${limit}`
+  );
+}

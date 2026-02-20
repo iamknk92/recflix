@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Search, Heart, Star, Film, User, LogOut, Home } from "lucide-react";
+import { Menu, X, Search, Heart, Star, Film, User, LogOut, Home, Users } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { WeatherIndicator } from "@/components/weather/WeatherBanner";
 import type { Weather } from "@/types";
@@ -85,6 +85,7 @@ export default function Header() {
     { href: "/favorites", label: "찜 목록", icon: Heart },
     { href: "/ratings", label: "내 평점", icon: Star },
     { href: "/my-taste", label: "내 취향 분석", icon: User },
+    { href: "/match", label: "MBTI 궁합", icon: Users },
   ];
 
   const isActivePath = (path: string) => {
