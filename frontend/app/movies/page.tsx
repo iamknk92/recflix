@@ -141,11 +141,11 @@ function MoviesPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-200 pt-20 pb-12 px-4">
+    <div className="page-container-narrow">
       <div className="max-w-7xl mx-auto">
         {/* Search & Filters */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-6">영화 검색</h1>
+          <h1 className="text-page-heading mb-6">영화 검색</h1>
 
           {/* Search Autocomplete */}
           <div className="mb-6">
@@ -161,7 +161,7 @@ function MoviesPageContent() {
             <select
               value={selectedGenre}
               onChange={(e) => updateParams({ genre: e.target.value })}
-              className="px-4 py-2.5 bg-dark-100 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary-500 transition"
+              className="px-4 py-2.5 bg-surface-raised border border-border rounded-lg text-content-primary focus:outline-none focus:border-primary-500 transition"
             >
               <option value="">모든 장르</option>
               {genres.map((genre) => (
@@ -175,7 +175,7 @@ function MoviesPageContent() {
             <select
               value={sortBy}
               onChange={(e) => updateParams({ sort: e.target.value })}
-              className="px-4 py-2.5 bg-dark-100 border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary-500 transition"
+              className="px-4 py-2.5 bg-surface-raised border border-border rounded-lg text-content-primary focus:outline-none focus:border-primary-500 transition"
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -190,7 +190,7 @@ function MoviesPageContent() {
               className={`px-4 py-2.5 rounded-lg transition flex items-center space-x-2 ${
                 useInfiniteMode
                   ? "bg-primary-600 text-white"
-                  : "bg-white/10 text-white/70 hover:bg-white/20"
+                  : "bg-white/10 text-content-muted hover:bg-white/20"
               }`}
             >
               <RefreshCw className="w-4 h-4" />
@@ -201,7 +201,7 @@ function MoviesPageContent() {
             {(query || selectedGenre) && (
               <button
                 onClick={() => router.push("/movies")}
-                className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition"
+                className="btn-secondary px-4 py-2.5"
               >
                 필터 초기화
               </button>
@@ -215,7 +215,7 @@ function MoviesPageContent() {
               animate={{ opacity: 1, y: 0 }}
               className="mt-4 flex items-center space-x-2"
             >
-              <span className="text-white/60">검색어:</span>
+              <span className="text-content-muted">검색어:</span>
               <span className="px-3 py-1 bg-primary-600/20 text-primary-400 rounded-full text-sm">
                 &quot;{query}&quot;
               </span>
@@ -243,12 +243,12 @@ function MoviesPageContent() {
               className="text-center py-12"
             >
               <div className="inline-flex items-center justify-center w-20 h-20 bg-white/5 rounded-full mb-6">
-                <Film className="w-10 h-10 text-white/20" />
+                <Film className="w-10 h-10 text-content-subtle" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
+              <h3 className="text-xl font-semibold text-content-primary mb-2">
                 검색 결과가 없습니다
               </h3>
-              <p className="text-white/60 mb-8">
+              <p className="text-content-muted mb-8">
                 {query
                   ? `"${query}"에 대한 검색 결과를 찾을 수 없습니다.`
                   : "조건에 맞는 영화가 없습니다."}
@@ -257,7 +257,7 @@ function MoviesPageContent() {
               {/* Recommended movies when no results */}
               {recommendedMovies.length > 0 && (
                 <div className="mt-8">
-                  <h4 className="text-lg font-semibold text-white mb-4 text-left">
+                  <h4 className="text-lg font-semibold text-content-primary mb-4 text-left">
                     이런 영화는 어떠세요?
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -296,7 +296,7 @@ function MoviesPageContent() {
 
                   {/* End of results */}
                   {!hasMore && movies.length > 0 && (
-                    <p className="text-center text-white/40 py-8">
+                    <p className="text-center text-content-subtle py-8">
                       모든 영화를 불러왔습니다
                     </p>
                   )}
@@ -308,7 +308,6 @@ function MoviesPageContent() {
                     <button
                       onClick={() => {
                         setCurrentPage(Math.max(1, currentPage - 1));
-                        // Refetch with new page
                         const fetchPage = async () => {
                           setLoading(true);
                           const data = await getMovies({
@@ -324,7 +323,7 @@ function MoviesPageContent() {
                         fetchPage();
                       }}
                       disabled={currentPage === 1}
-                      className="px-4 py-2 bg-dark-100 hover:bg-dark-100/70 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition"
+                      className="px-4 py-2 bg-surface-raised hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed text-content-primary rounded-lg transition"
                     >
                       이전
                     </button>
@@ -363,7 +362,7 @@ function MoviesPageContent() {
                             className={`w-10 h-10 rounded-lg transition ${
                               currentPage === pageNum
                                 ? "bg-primary-600 text-white"
-                                : "bg-dark-100 text-white/70 hover:bg-dark-100/70"
+                                : "bg-surface-raised text-content-muted hover:bg-surface-elevated"
                             }`}
                           >
                             {pageNum}
@@ -390,7 +389,7 @@ function MoviesPageContent() {
                         fetchPage();
                       }}
                       disabled={currentPage === totalPages}
-                      className="px-4 py-2 bg-dark-100 hover:bg-dark-100/70 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition"
+                      className="px-4 py-2 bg-surface-raised hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed text-content-primary rounded-lg transition"
                     >
                       다음
                     </button>
@@ -413,14 +412,14 @@ function MoviesPageContent() {
 // Loading fallback for Suspense
 function MoviesPageLoading() {
   return (
-    <div className="min-h-screen bg-dark-200 pt-20 pb-12 px-4">
+    <div className="page-container-narrow">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <div className="h-10 w-48 bg-dark-100 rounded animate-pulse mb-6" />
-          <div className="h-12 w-full bg-dark-100 rounded-lg animate-pulse mb-6" />
+          <div className="h-10 w-48 bg-surface-raised rounded animate-pulse mb-6" />
+          <div className="h-12 w-full bg-surface-raised rounded-lg animate-pulse mb-6" />
           <div className="flex gap-4">
-            <div className="h-10 w-32 bg-dark-100 rounded-lg animate-pulse" />
-            <div className="h-10 w-32 bg-dark-100 rounded-lg animate-pulse" />
+            <div className="h-10 w-32 bg-surface-raised rounded-lg animate-pulse" />
+            <div className="h-10 w-32 bg-surface-raised rounded-lg animate-pulse" />
           </div>
         </div>
         <MovieGridSkeleton count={24} />

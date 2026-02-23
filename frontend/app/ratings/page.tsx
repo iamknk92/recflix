@@ -50,7 +50,7 @@ function RatingCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className="bg-dark-100 rounded-lg overflow-hidden group"
+      className="bg-surface-raised rounded-lg overflow-hidden group"
     >
       <div className="flex">
         {/* Poster */}
@@ -65,8 +65,8 @@ function RatingCard({
                 onError={() => setImageError(true)}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-dark-200">
-                <Film className="w-8 h-8 text-white/20" />
+              <div className="w-full h-full flex items-center justify-center bg-surface-base">
+                <Film className="w-8 h-8 text-content-subtle" />
               </div>
             )}
           </div>
@@ -77,13 +77,13 @@ function RatingCard({
           <div>
             {/* Title */}
             <Link href={`/movies/${movie.id}`}>
-              <h3 className="text-white font-medium text-base sm:text-lg truncate hover:text-primary-400 transition">
+              <h3 className="text-content-primary font-medium text-base sm:text-lg truncate hover:text-primary-400 transition">
                 {displayTitle}
               </h3>
             </Link>
 
             {/* Meta */}
-            <div className="flex items-center space-x-2 text-xs sm:text-sm text-white/50 mt-1">
+            <div className="flex items-center space-x-2 text-xs sm:text-sm text-content-subtle mt-1">
               {year && <span>{year}</span>}
               {movie.genres && movie.genres.length > 0 && (
                 <>
@@ -102,7 +102,7 @@ function RatingCard({
                     className={`w-5 h-5 ${
                       star <= rating.score
                         ? "text-yellow-400 fill-yellow-400"
-                        : "text-white/20"
+                        : "text-content-subtle"
                     }`}
                   />
                 ))}
@@ -113,7 +113,7 @@ function RatingCard({
             </div>
 
             {/* Date and Weather */}
-            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-white/50">
+            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-content-subtle">
               <div className="flex items-center space-x-1">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>{formatDate(rating.created_at)}</span>
@@ -132,7 +132,7 @@ function RatingCard({
             <button
               onClick={() => onDelete(movie.id)}
               disabled={isDeleting}
-              className="p-2 text-white/40 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition opacity-0 group-hover:opacity-100"
+              className="p-2 text-content-subtle hover:text-red-500 hover:bg-red-500/10 rounded-lg transition opacity-0 group-hover:opacity-100"
               title="평점 삭제"
             >
               {isDeleting ? (
@@ -244,22 +244,22 @@ export default function RatingsPage() {
   // Not logged in state
   if (!authLoading && !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-dark-200 pt-20 pb-12 px-4">
+      <div className="page-container-narrow">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-24 h-24 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6">
               <Star className="w-12 h-12 text-yellow-500" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-3">
+            <h1 className="text-2xl font-bold text-content-primary mb-3">
               로그인이 필요합니다
             </h1>
-            <p className="text-white/60 text-center mb-8 max-w-md">
+            <p className="text-content-muted text-center mb-8 max-w-md">
               내 평점 목록을 보려면 로그인해주세요.<br />
               영화에 평점을 남기고 취향을 기록해보세요.
             </p>
             <Link
               href="/login"
-              className="flex items-center space-x-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition"
+              className="btn-primary flex items-center space-x-2"
             >
               <LogIn className="w-5 h-5" />
               <span>로그인하기</span>
@@ -271,20 +271,20 @@ export default function RatingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-200 pt-20 pb-12 px-4">
+    <div className="page-container-narrow">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-2">
             <Star className="w-8 h-8 text-yellow-500 fill-yellow-500" />
-            <h1 className="text-3xl font-bold text-white">내 평점</h1>
+            <h1 className="text-page-heading">내 평점</h1>
           </div>
-          <p className="text-white/60">
+          <p className="text-content-muted">
             {loading ? (
               "불러오는 중..."
             ) : ratings.length > 0 ? (
               <span>
-                총 <span className="text-white font-medium">{stats.totalCount}개</span> 영화 ·
+                총 <span className="text-content-primary font-medium">{stats.totalCount}개</span> 영화 ·
                 평균 <span className="text-yellow-400 font-medium">{stats.averageScore.toFixed(1)}</span>점
               </span>
             ) : (
@@ -304,14 +304,14 @@ export default function RatingsPage() {
               className="space-y-4"
             >
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="bg-dark-100 rounded-lg p-4 animate-pulse">
+                <div key={i} className="bg-surface-raised rounded-lg p-4 animate-pulse">
                   <div className="flex space-x-4">
-                    <div className="w-24 sm:w-32 aspect-[2/3] bg-dark-200 rounded" />
+                    <div className="w-24 sm:w-32 aspect-[2/3] bg-surface-base rounded" />
                     <div className="flex-1 space-y-3">
-                      <div className="h-5 bg-dark-200 rounded w-3/4" />
-                      <div className="h-4 bg-dark-200 rounded w-1/2" />
-                      <div className="h-6 bg-dark-200 rounded w-32" />
-                      <div className="h-3 bg-dark-200 rounded w-40" />
+                      <div className="h-5 bg-surface-base rounded w-3/4" />
+                      <div className="h-4 bg-surface-base rounded w-1/2" />
+                      <div className="h-6 bg-surface-base rounded w-32" />
+                      <div className="h-3 bg-surface-base rounded w-40" />
                     </div>
                   </div>
                 </div>
@@ -326,19 +326,19 @@ export default function RatingsPage() {
               className="text-center py-12"
             >
               <div className="inline-flex items-center justify-center w-20 h-20 bg-white/5 rounded-full mb-6">
-                <Star className="w-10 h-10 text-white/20" />
+                <Star className="w-10 h-10 text-content-subtle" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
+              <h3 className="text-xl font-semibold text-content-primary mb-2">
                 평점을 남긴 영화가 없습니다
               </h3>
-              <p className="text-white/60 mb-8">
+              <p className="text-content-muted mb-8">
                 영화를 보고 평점을 남겨보세요!
               </p>
 
               {/* Recommended movies */}
               {recommendedMovies.length > 0 && (
                 <div className="mt-8">
-                  <h4 className="text-lg font-semibold text-white mb-4 text-left">
+                  <h4 className="text-lg font-semibold text-content-primary mb-4 text-left">
                     이런 영화는 어떠세요?
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -351,7 +351,7 @@ export default function RatingsPage() {
 
               <Link
                 href="/movies"
-                className="inline-flex items-center space-x-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition mt-6"
+                className="btn-primary inline-flex items-center space-x-2 mt-6"
               >
                 <Film className="w-5 h-5" />
                 <span>영화 둘러보기</span>
@@ -384,7 +384,7 @@ export default function RatingsPage() {
                   <button
                     onClick={handleLoadMore}
                     disabled={loadingMore}
-                    className="px-8 py-3 bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white rounded-lg transition flex items-center space-x-2"
+                    className="btn-secondary disabled:opacity-50 flex items-center space-x-2"
                   >
                     {loadingMore ? (
                       <>
@@ -400,7 +400,7 @@ export default function RatingsPage() {
 
               {/* End of list */}
               {!hasMore && ratings.length >= PAGE_SIZE && (
-                <p className="text-center text-white/40 py-8">
+                <p className="text-center text-content-subtle py-8">
                   모든 평점을 불러왔습니다
                 </p>
               )}

@@ -92,22 +92,22 @@ export default function FavoritesPage() {
   // Not logged in state
   if (!authLoading && !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-dark-200 pt-20 pb-12 px-4">
+      <div className="page-container-narrow">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-24 h-24 bg-primary-500/10 rounded-full flex items-center justify-center mb-6">
               <Heart className="w-12 h-12 text-primary-500" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-3">
+            <h1 className="text-2xl font-bold text-content-primary mb-3">
               로그인이 필요합니다
             </h1>
-            <p className="text-white/60 text-center mb-8 max-w-md">
+            <p className="text-content-muted text-center mb-8 max-w-md">
               찜한 영화 목록을 보려면 로그인해주세요.<br />
               좋아하는 영화를 저장하고 나만의 컬렉션을 만들어보세요.
             </p>
             <Link
               href="/login"
-              className="flex items-center space-x-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition"
+              className="btn-primary flex items-center space-x-2"
             >
               <LogIn className="w-5 h-5" />
               <span>로그인하기</span>
@@ -119,15 +119,15 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-200 pt-20 pb-12 px-4">
+    <div className="page-container-narrow">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-2">
             <Heart className="w-8 h-8 text-primary-500 fill-primary-500" />
-            <h1 className="text-3xl font-bold text-white">찜한 영화</h1>
+            <h1 className="text-page-heading">찜한 영화</h1>
           </div>
-          <p className="text-white/60">
+          <p className="text-content-muted">
             {loading ? "불러오는 중..." : `총 ${favorites.length}개의 영화`}
           </p>
         </div>
@@ -152,19 +152,19 @@ export default function FavoritesPage() {
               className="text-center py-12"
             >
               <div className="inline-flex items-center justify-center w-20 h-20 bg-white/5 rounded-full mb-6">
-                <Film className="w-10 h-10 text-white/20" />
+                <Film className="w-10 h-10 text-content-subtle" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">
+              <h3 className="text-xl font-semibold text-content-primary mb-2">
                 찜한 영화가 없습니다
               </h3>
-              <p className="text-white/60 mb-8">
+              <p className="text-content-muted mb-8">
                 마음에 드는 영화를 찾아 하트를 눌러보세요!
               </p>
 
               {/* Recommended movies */}
               {recommendedMovies.length > 0 && (
                 <div className="mt-8">
-                  <h4 className="text-lg font-semibold text-white mb-4 text-left">
+                  <h4 className="text-lg font-semibold text-content-primary mb-4 text-left">
                     이런 영화는 어떠세요?
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -177,7 +177,7 @@ export default function FavoritesPage() {
 
               <Link
                 href="/movies"
-                className="inline-flex items-center space-x-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition mt-6"
+                className="btn-primary inline-flex items-center space-x-2 mt-6"
               >
                 <Film className="w-5 h-5" />
                 <span>영화 둘러보기</span>
@@ -229,7 +229,7 @@ export default function FavoritesPage() {
                   <button
                     onClick={handleLoadMore}
                     disabled={loadingMore}
-                    className="px-8 py-3 bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white rounded-lg transition flex items-center space-x-2"
+                    className="btn-secondary disabled:opacity-50 flex items-center space-x-2"
                   >
                     {loadingMore ? (
                       <>
@@ -245,7 +245,7 @@ export default function FavoritesPage() {
 
               {/* End of list */}
               {!hasMore && favorites.length >= PAGE_SIZE && (
-                <p className="text-center text-white/40 py-8">
+                <p className="text-center text-content-subtle py-8">
                   모든 찜한 영화를 불러왔습니다
                 </p>
               )}
