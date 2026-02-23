@@ -10,7 +10,7 @@ const withPWA = require("next-pwa")({
   },
   runtimeCaching: [
     {
-      urlPattern: /^https:\/\/backend-production-cff2\.up\.railway\.app\/.*/i,
+      urlPattern: /^https:\/\/recflix-production\.up\.railway\.app\/.*/i,
       handler: "NetworkFirst",
       options: {
         cacheName: "api-cache",
