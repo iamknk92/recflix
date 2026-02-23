@@ -126,3 +126,10 @@ docker-compose.override.yml
 *.temp
 .cache/
 coverage/
+
+# ----------------------------------------------
+# Claude Code 임시 파일
+# ----------------------------------------------
+claude.md
+claude_*.txt
+frontend/tsconfig.tsbuildinfo
