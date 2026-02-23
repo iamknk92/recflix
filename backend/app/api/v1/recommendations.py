@@ -3,9 +3,10 @@ Recommendation API endpoints
 Hybrid recommendation engine combining MBTI, Weather, and Personal preferences
 """
 import random
+import time
 from typing import Optional, List, Dict, Tuple
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import text, desc
 from datetime import datetime, timedelta
 
@@ -99,15 +100,26 @@ WEATHER_TITLES = {
 }
 
 
+_llm_ids_cache: Optional[set] = None
+_llm_ids_cache_time: float = 0.0
+_LLM_IDS_CACHE_TTL = 300  # 5분 캐시
+
+
 def get_llm_movie_ids(db: Session) -> set:
-    """Get IDs of LLM-processed movies (top 1000 by popularity)"""
+    """Get IDs of LLM-processed movies (top 1000 by popularity) — 5분 모듈 캐시 적용"""
+    global _llm_ids_cache, _llm_ids_cache_time
+    now = time.time()
+    if _llm_ids_cache is not None and now - _llm_ids_cache_time < _LLM_IDS_CACHE_TTL:
+        return _llm_ids_cache
     result = db.execute(text("""
         SELECT id FROM movies
         WHERE vote_count >= 50
         ORDER BY popularity DESC
         LIMIT 1000
     """)).fetchall()
-    return set(row[0] for row in result)
+    _llm_ids_cache = set(row[0] for row in result)
+    _llm_ids_cache_time = now
+    return _llm_ids_cache
 
 
 def get_movies_by_score(
@@ -233,11 +245,14 @@ def get_user_preferences(
         Rating.created_at >= recent_date
     ).all()
 
-    for rating in high_ratings:
-        highly_rated_ids.add(rating.movie_id)
-        # Also count genres from highly rated movies (weighted more)
-        movie = db.query(Movie).filter(Movie.id == rating.movie_id).first()
-        if movie:
+    if high_ratings:
+        rated_ids = [r.movie_id for r in high_ratings]
+        highly_rated_ids.update(rated_ids)
+        # joinedload로 N+1 방지: 모든 영화 + 장르를 한 번에 로드
+        rated_movies = db.query(Movie).options(joinedload(Movie.genres)).filter(
+            Movie.id.in_(rated_ids)
+        ).all()
+        for movie in rated_movies:
             for genre in movie.genres:
                 genre_name = genre.name if hasattr(genre, 'name') else str(genre)
                 genre_counts[genre_name] = genre_counts.get(genre_name, 0) + 2  # Double weight

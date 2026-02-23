@@ -60,7 +60,7 @@ class Movie(Base):
     certification = Column(String(20))
     runtime = Column(Integer)
     vote_average = Column(Float, default=0.0)
-    vote_count = Column(Integer, default=0)
+    vote_count = Column(Integer, default=0, index=True)
     overview = Column(Text)
     overview_ko = Column(Text)
     tagline = Column(String(500))
@@ -76,7 +76,7 @@ class Movie(Base):
     cast_ko = Column(Text)                       # Cast names in Korean (comma-separated)
     production_countries_ko = Column(Text)        # Production countries in Korean
     release_season = Column(String(10))           # 봄/여름/가을/겨울
-    weighted_score = Column(Float, default=0.0)   # Pre-calculated weighted score
+    weighted_score = Column(Float, default=0.0, index=True)   # Pre-calculated weighted score
 
     # Recommendation scores (JSONB)
     mbti_scores = Column(JSONB, default={})      # {"INTJ": 0.8, "ENFP": 0.6, ...}
