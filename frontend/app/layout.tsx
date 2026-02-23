@@ -31,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="min-h-screen bg-dark-200">
+      <body className="min-h-screen bg-surface-base">
         <Header />
         <main className="pt-14 md:pt-16 pb-16 md:pb-0">{children}</main>
         <MobileNav />
