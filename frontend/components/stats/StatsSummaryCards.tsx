@@ -19,10 +19,10 @@ export default function StatsSummaryCards({ stats }: Props) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
       {cards.map((card) => (
-        <div key={card.label} className="bg-[#1e1e1e] rounded-xl p-5 flex flex-col gap-2">
+        <div key={card.label} className="card p-5 flex flex-col gap-2">
           <span className="text-3xl">{card.icon}</span>
-          <span className="text-2xl font-bold text-white">{card.value}</span>
-          <span className="text-sm text-gray-400">{card.label}</span>
+          <span className="text-2xl font-bold text-content-primary">{card.value}</span>
+          <span className="text-sm text-content-muted">{card.label}</span>
         </div>
       ))}
     </div>

@@ -17,9 +17,9 @@ export default function ScoreBarChart({ data, averageScore }: Props) {
     : "보통이에요 😐"
 
   return (
-    <div className="bg-[#1e1e1e] rounded-xl p-6">
-      <h3 className="text-white font-bold text-lg mb-1">⭐ 별점 분포</h3>
-      <p className="text-gray-400 text-sm mb-4">
+    <div className="card p-6">
+      <h3 className="text-content-primary font-bold text-lg mb-1">⭐ 별점 분포</h3>
+      <p className="text-content-muted text-sm mb-4">
         평점을 주는 스타일이 <span className="text-yellow-400">{tendency}</span>
       </p>
       <ResponsiveContainer width="100%" height={220}>

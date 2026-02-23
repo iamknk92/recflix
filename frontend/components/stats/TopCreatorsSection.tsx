@@ -9,16 +9,16 @@ const MEDALS = ["🥇", "🥈", "🥉"]
 
 export default function TopCreatorsSection({ directors, actors }: Props) {
   const renderList = (items: string[], label: string) => (
-    <div className="bg-[#1e1e1e] rounded-xl p-6 flex-1">
-      <h3 className="text-white font-bold text-lg mb-4">{label}</h3>
+    <div className="card p-6 flex-1">
+      <h3 className="text-content-primary font-bold text-lg mb-4">{label}</h3>
       {items.length === 0 ? (
-        <p className="text-gray-500 text-sm">아직 데이터가 부족해요</p>
+        <p className="text-content-subtle text-sm">아직 데이터가 부족해요</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {items.map((name, i) => (
             <li key={name} className="flex items-center gap-3">
               <span className="text-2xl">{MEDALS[i]}</span>
-              <span className="text-white font-medium">{name}</span>
+              <span className="text-content-primary font-medium">{name}</span>
             </li>
           ))}
         </ul>

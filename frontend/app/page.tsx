@@ -114,7 +114,7 @@ export default function HomePage() {
           <p className="text-red-500 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition"
+            className="btn-primary px-4 py-2"
           >
             다시 시도
           </button>

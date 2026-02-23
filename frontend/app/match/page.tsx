@@ -149,7 +149,7 @@ export default function MatchPage() {
       : "text-blue-400";
 
   return (
-    <div className="min-h-screen bg-[#141414] pt-20 pb-16 px-4 md:px-8">
+    <div className="page-container-narrow">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
@@ -159,9 +159,9 @@ export default function MatchPage() {
         >
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-6 h-6 text-primary-400" />
-            <h1 className="text-2xl font-bold text-white">MBTI 궁합 추천</h1>
+            <h1 className="text-2xl font-bold text-content-primary">MBTI 궁합 추천</h1>
           </div>
-          <p className="text-white/50 text-sm">
+          <p className="text-content-muted text-sm">
             두 MBTI의 궁합을 분석하고, 둘 다 좋아할 영화를 추천해요
           </p>
         </motion.div>
@@ -171,7 +171,7 @@ export default function MatchPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-[#1e1e2e] rounded-2xl p-6 mb-6 border border-white/5"
+          className="card p-6 mb-6"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* My MBTI */}
@@ -182,7 +182,7 @@ export default function MatchPage() {
                 label={isAuthenticated ? `내 MBTI (${user?.nickname || "나"})` : "나의 MBTI"}
               />
               {!isAuthenticated && (
-                <p className="text-white/30 text-xs mt-2">
+                <p className="text-content-subtle text-xs mt-2">
                   로그인하면 내 MBTI가 자동으로 설정돼요
                 </p>
               )}
@@ -206,7 +206,7 @@ export default function MatchPage() {
             <button
               onClick={handleSearch}
               disabled={loading}
-              className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 text-white px-8 py-3 rounded-xl font-medium transition"
+              className="btn-primary flex items-center gap-2 px-8 py-3"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -233,7 +233,7 @@ export default function MatchPage() {
               transition={{ duration: 0.4 }}
             >
               {/* Compatibility Card */}
-              <div className="bg-[#1e1e2e] rounded-2xl p-6 mb-6 border border-white/5">
+              <div className="card p-6 mb-6">
                 <div className="flex flex-col md:flex-row items-center gap-6">
                   <CompatibilityRing score={result.compatibility.score} />
                   <div className="flex-1 text-center md:text-left">
@@ -241,7 +241,7 @@ export default function MatchPage() {
                       <span className="text-primary-400 font-bold text-lg">
                         {result.mbti1}
                       </span>
-                      <span className="text-white/40">×</span>
+                      <span className="text-content-subtle">×</span>
                       <span className="text-purple-400 font-bold text-lg">
                         {result.mbti2}
                       </span>
@@ -255,7 +255,7 @@ export default function MatchPage() {
                           : "도전적인 조합"}
                       </span>
                     </div>
-                    <p className="text-white/70 text-sm leading-relaxed">
+                    <p className="text-content-secondary text-sm leading-relaxed">
                       {result.compatibility.description}
                     </p>
                   </div>
@@ -263,15 +263,15 @@ export default function MatchPage() {
               </div>
 
               {/* Movie List */}
-              <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
+              <h2 className="text-content-primary font-semibold mb-4 flex items-center gap-2">
                 <span>함께 보기 좋은 영화</span>
-                <span className="text-white/40 text-sm font-normal">
+                <span className="text-content-subtle text-sm font-normal">
                   {result.movies.length}편
                 </span>
               </h2>
 
               {result.movies.length === 0 ? (
-                <div className="text-center py-12 text-white/40">
+                <div className="text-center py-12 text-content-subtle">
                   <p>추천 가능한 영화가 없습니다.</p>
                 </div>
               ) : (
@@ -286,7 +286,7 @@ export default function MatchPage() {
                       <Link href={`/movies/${movie.id}`}>
                         <div className="group cursor-pointer">
                           {/* Poster */}
-                          <div className="relative aspect-[2/3] rounded-xl overflow-hidden mb-2 bg-[#1e1e2e]">
+                          <div className="relative aspect-[2/3] rounded-xl overflow-hidden mb-2 bg-surface-card">
                             {movie.poster_path ? (
                               <Image
                                 src={`${POSTER_BASE}${movie.poster_path}`}
@@ -296,7 +296,7 @@ export default function MatchPage() {
                                 sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                               />
                             ) : (
-                              <div className="absolute inset-0 flex items-center justify-center text-white/20">
+                              <div className="absolute inset-0 flex items-center justify-center text-content-subtle">
                                 <Star className="w-10 h-10" />
                               </div>
                             )}
@@ -310,20 +310,20 @@ export default function MatchPage() {
                           </div>
 
                           {/* Title */}
-                          <p className="text-white text-xs font-medium truncate">
+                          <p className="text-content-primary text-xs font-medium truncate">
                             {movie.title_ko || movie.title}
                           </p>
 
                           {/* Score bar */}
                           <div className="flex items-center gap-1 mt-1">
-                            <div className="flex-1 h-1 rounded-full bg-[#2a2a3e] overflow-hidden">
+                            <div className="flex-1 h-1 rounded-full bg-surface-elevated overflow-hidden">
                               <div
                                 className="h-full bg-primary-500 rounded-full"
                                 style={{ width: `${movie.mbti1_score}%` }}
                               />
                             </div>
-                            <span className="text-white/30 text-[10px]">|</span>
-                            <div className="flex-1 h-1 rounded-full bg-[#2a2a3e] overflow-hidden">
+                            <span className="text-content-subtle text-[10px]">|</span>
+                            <div className="flex-1 h-1 rounded-full bg-surface-elevated overflow-hidden">
                               <div
                                 className="h-full bg-purple-500 rounded-full"
                                 style={{ width: `${movie.mbti2_score}%` }}
@@ -369,11 +369,11 @@ export default function MatchPage() {
                   setMyMbti(m1);
                   setFriendMbti(m2);
                 }}
-                className="bg-[#1e1e2e] hover:bg-[#2a2a3e] rounded-xl p-3 text-left transition border border-white/5"
+                className="card-interactive p-3 text-left"
               >
                 <span className="text-lg">{item.emoji}</span>
-                <p className="text-white/60 text-xs mt-1">{item.pair}</p>
-                <p className="text-white/30 text-xs">{item.desc}</p>
+                <p className="text-content-muted text-xs mt-1">{item.pair}</p>
+                <p className="text-content-subtle text-xs">{item.desc}</p>
               </button>
             ))}
           </motion.div>

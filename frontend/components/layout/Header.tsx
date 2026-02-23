@@ -98,7 +98,7 @@ export default function Header() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled || mobileMenuOpen
-            ? "bg-dark-200/95 backdrop-blur-sm shadow-lg"
+            ? "bg-surface-raised/95 backdrop-blur-sm shadow-lg"
             : "bg-gradient-to-b from-dark-300/80 to-transparent"
         }`}
       >
@@ -118,7 +118,7 @@ export default function Header() {
                   className={`transition ${
                     isActivePath(item.href)
                       ? "text-primary-400 font-medium"
-                      : "text-white/80 hover:text-white"
+                      : "text-content-secondary hover:text-content-primary"
                   }`}
                 >
                   {item.label}
@@ -132,7 +132,7 @@ export default function Header() {
                     className={`transition ${
                       isActivePath(item.href)
                         ? "text-primary-400 font-medium"
-                        : "text-white/80 hover:text-white"
+                        : "text-content-secondary hover:text-content-primary"
                     }`}
                   >
                     {item.label}
@@ -165,7 +165,7 @@ export default function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="영화 검색..."
-                  className="bg-dark-100/50 border border-white/20 rounded-full px-4 py-1.5 text-sm text-white placeholder-white/50 focus:outline-none focus:border-primary-500 transition-all w-48"
+                  className="bg-surface-raised/50 border border-border-hover rounded-full px-4 py-1.5 text-sm text-content-primary placeholder-content-muted focus:outline-none focus:border-primary-500 transition-all w-48"
                 />
               </form>
 
@@ -174,7 +174,7 @@ export default function Header() {
                 <div className="hidden md:flex items-center space-x-3">
                   <Link
                     href="/profile"
-                    className="flex items-center space-x-2 text-white/80 hover:text-white transition"
+                    className="flex items-center space-x-2 text-content-secondary hover:text-content-primary transition"
                   >
                     <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center">
                       <span className="text-sm font-medium">
@@ -184,7 +184,7 @@ export default function Header() {
                   </Link>
                   <button
                     onClick={logout}
-                    className="text-sm text-white/60 hover:text-white transition"
+                    className="text-sm text-content-muted hover:text-content-primary transition"
                   >
                     로그아웃
                   </button>
@@ -228,7 +228,7 @@ export default function Header() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="영화 제목, 배우, 감독 검색..."
-                    className="w-full bg-dark-100 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-primary-500 transition"
+                    className="w-full bg-surface-raised border border-border-hover rounded-lg px-4 py-3 text-content-primary placeholder-content-muted focus:outline-none focus:border-primary-500 transition"
                     autoFocus
                   />
                 </form>
@@ -257,7 +257,7 @@ export default function Header() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed top-0 right-0 bottom-0 w-72 bg-dark-200 z-50 md:hidden shadow-2xl"
+              className="fixed top-0 right-0 bottom-0 w-72 bg-surface-raised z-50 md:hidden shadow-2xl"
             >
               <div className="flex flex-col h-full pt-16">
                 {/* Weather */}
@@ -289,7 +289,7 @@ export default function Header() {
                         className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
                           isActivePath(item.href)
                             ? "bg-primary-600/20 text-primary-400"
-                            : "text-white/80 hover:bg-white/5"
+                            : "text-content-secondary hover:bg-white/5"
                         }`}
                       >
                         <Icon className="w-5 h-5" />
@@ -336,8 +336,8 @@ export default function Header() {
                           </span>
                         </div>
                         <div>
-                          <p className="text-white font-medium">{user?.nickname}</p>
-                          <p className="text-white/60 text-sm">{user?.mbti || "MBTI 미설정"}</p>
+                          <p className="text-content-primary font-medium">{user?.nickname}</p>
+                          <p className="text-content-muted text-sm">{user?.mbti || "MBTI 미설정"}</p>
                         </div>
                       </Link>
                       <button
@@ -345,7 +345,7 @@ export default function Header() {
                           logout();
                           setMobileMenuOpen(false);
                         }}
-                        className="flex items-center space-x-3 px-4 py-3 w-full text-left text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition"
+                        className="flex items-center space-x-3 px-4 py-3 w-full text-left text-content-muted hover:text-content-primary hover:bg-white/5 rounded-lg transition"
                       >
                         <LogOut className="w-5 h-5" />
                         <span>로그아웃</span>

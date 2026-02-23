@@ -16,9 +16,9 @@ const COLORS = ["#4d96ff", "#ffd93d", "#95a5a6", "#e8f4f8"]
 export default function WeatherRadarChart({ data }: Props) {
   if (Object.keys(data).length === 0) {
     return (
-      <div className="bg-[#1e1e1e] rounded-xl p-6">
-        <h3 className="text-white font-bold text-lg mb-4">🌤️ 날씨별 장르 취향</h3>
-        <div className="text-center text-gray-500 py-10">날씨 기록이 쌓이면 보여드릴게요 🌤️</div>
+      <div className="card p-6">
+        <h3 className="text-content-primary font-bold text-lg mb-4">🌤️ 날씨별 장르 취향</h3>
+        <div className="text-center text-content-subtle py-10">날씨 기록이 쌓이면 보여드릴게요 🌤️</div>
       </div>
     )
   }
@@ -34,8 +34,8 @@ export default function WeatherRadarChart({ data }: Props) {
   const weatherKeys = Object.keys(data).map((w) => WEATHER_LABEL[w] ?? w)
 
   return (
-    <div className="bg-[#1e1e1e] rounded-xl p-6">
-      <h3 className="text-white font-bold text-lg mb-4">🌤️ 날씨별 장르 취향</h3>
+    <div className="card p-6">
+      <h3 className="text-content-primary font-bold text-lg mb-4">🌤️ 날씨별 장르 취향</h3>
       <ResponsiveContainer width="100%" height={300}>
         <RadarChart data={chartData}>
           <PolarGrid stroke="#333" />

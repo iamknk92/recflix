@@ -15,15 +15,15 @@ export default function GenreDonutChart({ data }: Props) {
 
   if (chartData.length === 0) {
     return (
-      <div className="bg-[#1e1e1e] rounded-xl p-6 flex items-center justify-center h-48">
-        <p className="text-gray-500">장르 데이터가 없어요</p>
+      <div className="card p-6 flex items-center justify-center h-48">
+        <p className="text-content-subtle">장르 데이터가 없어요</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-[#1e1e1e] rounded-xl p-6">
-      <h3 className="text-white font-bold text-lg mb-4">🎭 장르 선호도</h3>
+    <div className="card p-6">
+      <h3 className="text-content-primary font-bold text-lg mb-4">🎭 장르 선호도</h3>
       <ResponsiveContainer width="100%" height={260}>
         <PieChart>
           <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value">
@@ -36,7 +36,7 @@ export default function GenreDonutChart({ data }: Props) {
         </PieChart>
       </ResponsiveContainer>
       {topGenre && (
-        <p className="text-center text-gray-300 mt-2 text-sm">
+        <p className="text-center text-content-secondary mt-2 text-sm">
           당신은 <span className="text-red-400 font-bold">{topGenre}</span> 마니아예요!
         </p>
       )}

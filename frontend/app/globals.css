@@ -2,6 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed
+           text-white px-6 py-2.5 rounded-lg font-semibold transition;
+  }
+  .btn-secondary {
+    @apply bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-lg transition;
+  }
+
+  /* ── Cards ── */
+  .card {
+    @apply bg-surface-card rounded-2xl border border-border;
+  }
+  .card-interactive {
+    @apply bg-surface-card rounded-2xl border border-border
+           hover:bg-surface-elevated transition cursor-pointer;
+  }
+
+  /* ── Page layouts ── */
+  .page-container-narrow {
+    @apply min-h-screen bg-surface-base pt-20 px-4 md:px-8 pb-16;
+  }
+  .page-container-wide {
+    @apply min-h-screen bg-surface-base pb-24 md:pb-20;
+  }
+
+  /* ── Typography ── */
+  .text-page-heading {
+    @apply text-content-primary text-3xl font-bold;
+  }
+  .text-page-desc {
+    @apply text-content-muted;
+  }
+}
+
 :root {
   --background: #141414;
   --foreground: #ffffff;
