@@ -9,6 +9,23 @@ import { useWeather } from "@/hooks/useWeather";
 import { useAuthStore } from "@/stores/authStore";
 import type { HomeRecommendations, MoodType } from "@/types";
 
+// ── LazyRow: 뷰포트 진입 시에만 렌더 (Intersection Observer) ──────
+function LazyRow({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { rootMargin: "200px" }
+    );
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+
+  return <div ref={ref}>{visible ? children : <MovieRowSkeleton />}</div>;
+}
+
 // ── Dynamic Imports ───────────────────────────────────────────────
 // ssr: false → 스크롤 아래 컴포넌트는 클라이언트에서만 로드
 // FeaturedBanner는 첫 화면에 바로 보여야 해서 static import 유지
@@ -65,7 +82,9 @@ export default function HomePage() {
     setRowsVisible(false);
 
     try {
-      const data = await getHomeRecommendations(condition, currentMood);
+      const data = await getHomeRecommendations(condition, currentMood, {
+        signal: abortRef.current!.signal,
+      });
       setRecommendations(data);
 
       // 배너 먼저 표시 후 rows는 낮은 우선순위로 렌더링
@@ -79,10 +98,12 @@ export default function HomePage() {
     }
   }, []);
 
+  // weather?.condition을 변수로 추출 → 객체 참조 변경에도 재실행 방지
+  const weatherCondition = weather?.condition;
   useEffect(() => {
-    if (!weather?.condition) return;
-    fetchRecommendations(weather.condition, mood);
-  }, [weather?.condition, mood, isAuthenticated, fetchRecommendations]);
+    if (!weatherCondition) return;
+    fetchRecommendations(weatherCondition, mood);
+  }, [weatherCondition, mood, isAuthenticated, fetchRecommendations]);
 
   // ── 로그아웃 감지 ────────────────────────────────────────────
   useEffect(() => {
@@ -160,17 +181,20 @@ export default function HomePage() {
         ) : (
           <>
             {recommendations?.hybrid_row && (
-              <HybridMovieRow
-                title={recommendations.hybrid_row.title}
-                movies={recommendations.hybrid_row.movies}
-              />
+              <LazyRow>
+                <HybridMovieRow
+                  title={recommendations.hybrid_row.title}
+                  movies={recommendations.hybrid_row.movies}
+                />
+              </LazyRow>
             )}
             {recommendations?.rows.map((row, idx) => (
-              <MovieRow
-                key={`${row.title}-${idx}`}
-                title={row.title}
-                movies={row.movies}
-              />
+              <LazyRow key={`${row.title}-${idx}`}>
+                <MovieRow
+                  title={row.title}
+                  movies={row.movies}
+                />
+              </LazyRow>
             ))}
           </>
         )}

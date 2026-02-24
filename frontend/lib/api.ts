@@ -21,27 +21,25 @@ async function fetchAPI<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...options.headers,
-  };
-
-  if (token) {
-    (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
     ...options,
-    headers,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}), // 토큰 추가
+      ...options.headers,
+    },
+    // ✅ 로그인 상태면 캐시를 하지 않고(no-store), 비로그인이면 설정된 캐시 옵션을 따릅니다.
+    cache: token ? "no-store" : (options.cache || "default"),
   });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: "Request failed" }));
-    throw new Error(error.detail || "Request failed");
+  if (!res.ok) {
+    if (res.status === 401) {
+      // 토큰 만료 처리 로직 (필요 시)
+    }
+    throw new Error(`API error: ${res.status}`);
   }
-
-  return response.json();
+  
+  return res.json();
 }
 
 // Movie APIs
@@ -78,12 +76,18 @@ export async function getGenres(): Promise<Genre[]> {
 }
 
 // Recommendation APIs
-export async function getHomeRecommendations(weather?: string, mood?: string | null): Promise<HomeRecommendations> {
+export async function getHomeRecommendations(
+  weather?: string,
+  mood?: string | null,
+  options?: { signal?: AbortSignal }
+): Promise<HomeRecommendations> {
   const searchParams = new URLSearchParams();
   if (weather) searchParams.set("weather", weather);
   if (mood) searchParams.set("mood", mood);
   const query = searchParams.toString();
-  return fetchAPI<HomeRecommendations>(`/recommendations${query ? `?${query}` : ""}`);
+  return fetchAPI<HomeRecommendations>(`/recommendations${query ? `?${query}` : ""}`,
+    { next: { revalidate: 3600 }, signal: options?.signal }
+  );
 }
 
 export async function getMBTIRecommendations(mbti: string, limit = 20): Promise<Movie[]> {
@@ -94,8 +98,15 @@ export async function getWeatherRecommendations(weather: string, limit = 20): Pr
   return fetchAPI<Movie[]>(`/recommendations/weather?weather=${weather}&limit=${limit}`);
 }
 
+// 특정 시간(예: 1시간) 동안 서버 데이터를 재사용하도록 설정
 export async function getPopularMovies(limit = 20): Promise<Movie[]> {
-  return fetchAPI<Movie[]>(`/recommendations/popular?limit=${limit}`);
+  return fetchAPI<Movie[]>(`/recommendations/popular?limit=${limit}`, {
+    next: { 
+      // 3600초(1시간) 동안 이 API 응답을 캐싱합니다.
+      // 이 시간 동안에는 서버에 다시 요청하지 않고 저장된 데이터를 즉시 반환합니다.
+      revalidate: 3600 
+    }
+  });
 }
 
 // Auth APIs
