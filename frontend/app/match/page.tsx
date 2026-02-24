@@ -42,7 +42,7 @@ function MbtiToggle({
 
   return (
     <div>
-      <p className="text-white/60 text-sm mb-3">{label}</p>
+      <p className="text-content-secondary text-sm font-semibold mb-3">{label}</p>
       <div className="flex gap-2">
         {AXES.map(([a, b], i) => (
           <button
@@ -51,20 +51,20 @@ function MbtiToggle({
             className="flex flex-col items-center gap-1"
           >
             <span
-              className={`text-xs font-bold px-2 py-0.5 rounded transition ${
+              className={`text-[11px] font-bold px-2 py-0.5 rounded-badge transition shadow-sm ${
                 axes[i] === a
                   ? "bg-primary-600 text-white"
-                  : "bg-white/10 text-white/40"
+                  : "bg-surface-raised text-content-muted border border-border"
               }`}
             >
               {a}
             </span>
-            <span className="text-white/30 text-xs">|</span>
+            <span className="text-content-subtle text-[10px]">|</span>
             <span
-              className={`text-xs font-bold px-2 py-0.5 rounded transition ${
+              className={`text-[11px] font-bold px-2 py-0.5 rounded-badge transition ${
                 axes[i] === b
-                  ? "bg-primary-600 text-white"
-                  : "bg-white/10 text-white/40"
+                  ? "bg-primary-600 text-white shadow-sm"
+                  : "bg-surface-raised text-content-muted border border-border"
               }`}
             >
               {b}
@@ -72,7 +72,7 @@ function MbtiToggle({
           </button>
         ))}
       </div>
-      <p className="text-primary-400 font-bold text-xl mt-2">{value}</p>
+      <p className="text-primary-700 font-bold text-2xl mt-3 tracking-tight">{value}</p>
     </div>
   );
 }
@@ -94,7 +94,7 @@ function CompatibilityRing({ score }: { score: number }) {
   return (
     <div className="relative w-28 h-28 flex items-center justify-center">
       <svg className="absolute inset-0 -rotate-90" width="112" height="112">
-        <circle cx="56" cy="56" r={radius} stroke="#1e1e2e" strokeWidth="8" fill="none" />
+        <circle cx="56" cy="56" r={radius} stroke="#F5F1EC" strokeWidth="8" fill="none" />
         <circle
           cx="56"
           cy="56"
@@ -108,7 +108,7 @@ function CompatibilityRing({ score }: { score: number }) {
           style={{ transition: "stroke-dashoffset 0.8s ease" }}
         />
       </svg>
-      <span className="text-2xl font-bold text-white">{score}</span>
+      <span className="text-xl font-bold text-primary-900">{score}</span>
     </div>
   );
 }
@@ -190,7 +190,7 @@ export default function MatchPage() {
 
             {/* Divider */}
             <div className="hidden md:flex items-center justify-center">
-              <div className="h-full w-px bg-white/10" />
+              <div className="h-full w-px bg-border" />
             </div>
 
             {/* Friend MBTI */}
@@ -218,7 +218,7 @@ export default function MatchPage() {
           </div>
 
           {error && (
-            <p className="text-red-400 text-sm text-center mt-3">{error}</p>
+            <p className="text-primary-600 text-sm text-center mt-3">{error}</p>
           )}
         </motion.div>
 
@@ -238,11 +238,11 @@ export default function MatchPage() {
                   <CompatibilityRing score={result.compatibility.score} />
                   <div className="flex-1 text-center md:text-left">
                     <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                      <span className="text-primary-400 font-bold text-lg">
+                      <span className="text-primary-700 font-bold text-lg">
                         {result.mbti1}
                       </span>
-                      <span className="text-content-subtle">×</span>
-                      <span className="text-purple-400 font-bold text-lg">
+                      <span className="text-content-secondary">×</span>
+                      <span className="text-accent-purple font-bold text-lg">
                         {result.mbti2}
                       </span>
                       <span className={`ml-2 font-bold text-lg ${scoreColor}`}>
@@ -286,7 +286,7 @@ export default function MatchPage() {
                       <Link href={`/movies/${movie.id}`}>
                         <div className="group cursor-pointer">
                           {/* Poster */}
-                          <div className="relative aspect-[2/3] rounded-xl overflow-hidden mb-2 bg-surface-card">
+                          <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden mb-2 bg-surface-card shadow-sm">
                             {movie.poster_path ? (
                               <Image
                                 src={`${POSTER_BASE}${movie.poster_path}`}
@@ -297,7 +297,7 @@ export default function MatchPage() {
                               />
                             ) : (
                               <div className="absolute inset-0 flex items-center justify-center text-content-subtle">
-                                <Star className="w-10 h-10" />
+                                <Star className="w-8 h-8 opacity-20" />
                               </div>
                             )}
 

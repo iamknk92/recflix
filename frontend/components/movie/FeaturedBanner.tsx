@@ -126,16 +126,24 @@ export default function FeaturedBanner({
         {/* Background Image */}
         <div className="absolute inset-0">
           <Image
-            src={getImageUrl(movie.poster_path, "original")}
+            src={getImageUrl(movie.poster_path, "w1280")}
             alt={movie.title_ko || movie.title}
             fill
-            className="object-cover"
+            className="object-cover brightness-[0.6]"
             priority
+            sizes="100vw"
           />
-          {/* Gradient Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-r from-dark-200 via-dark-200/70 to-dark-200/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-200 via-transparent to-dark-200/50" />
-          <div className="absolute inset-0 bg-gradient-to-b from-dark-200/60 via-transparent to-dark-200" />
+          {/* 
+            핵심 수정: dark-200(미정의) → 실제 색상 코드 사용
+            포스터 위에 어두운 그라데이션을 씌워서 흰 글씨가 잘 보이게!
+            하단은 밝은 배경(#FAF8F5)으로 자연스럽게 페이드아웃
+          */}
+          {/* 좌측 어둡게 — 영화 제목 가독성 확보 */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+          {/* 하단 → 밝은 배경으로 자연스럽게 연결 */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F5] via-transparent to-transparent" />
+          {/* 상단 살짝 어둡게 — 네비게이션 가독성 */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent" />
         </div>
 
         {/* Content Container - 하단 영화 정보 */}
@@ -147,13 +155,13 @@ export default function FeaturedBanner({
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            {/* Movie Title */}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+            {/* Movie Title — 포스터 위이므로 흰색 유지 + 그림자로 선명하게 */}
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
               {movie.title_ko || movie.title}
             </h1>
 
             {/* Meta Info */}
-            <div className="flex flex-wrap items-center gap-2 md:gap-4 text-sm md:text-base text-white/80">
+            <div className="flex flex-wrap items-center gap-2 md:gap-4 text-sm md:text-base text-white/90 drop-shadow-md">
               <div className="flex items-center space-x-1">
                 <svg className="w-4 h-4 md:w-5 md:h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -174,7 +182,7 @@ export default function FeaturedBanner({
             <div className="flex space-x-3 mt-1">
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center space-x-2 bg-white text-black px-4 md:px-6 py-2.5 md:py-3 rounded-md font-medium hover:bg-white/90 transition text-sm md:text-base"
+                className="flex items-center space-x-2 bg-white text-black px-4 md:px-6 py-2.5 md:py-3 rounded-md font-medium hover:bg-white/90 transition text-sm md:text-base shadow-md"
               >
                 <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
@@ -184,7 +192,7 @@ export default function FeaturedBanner({
               <button
                 onClick={handleAddToList}
                 disabled={isAddingToList}
-                className={`flex items-center space-x-2 px-4 md:px-6 py-2.5 md:py-3 rounded-md font-medium transition text-sm md:text-base ${
+                className={`flex items-center space-x-2 px-4 md:px-6 py-2.5 md:py-3 rounded-md font-medium transition text-sm md:text-base shadow-md ${
                   isFavorited
                     ? "bg-primary-600 text-white hover:bg-primary-700"
                     : "bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm"

@@ -31,19 +31,20 @@ export default function MovieCard({ movie, index = 0, showQuickView = true }: Mo
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.05 }}
-        className="flex-shrink-0 w-[160px] md:w-[200px] group"
+        className="w-full group"
       >
         <Link href={`/movies/${movie.id}`}>
           {/* Poster */}
-          <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-dark-100 cursor-pointer">
+          <div className="relative aspect-[2/3] w-[180px] md:w-[180px] rounded-xl overflow-hidden shadow-sm bg-surface-card">
             {!imageError && movie.poster_path ? (
               <Image
                 src={getImageUrl(movie.poster_path, "w342")}
                 alt={movie.title_ko || movie.title}
                 fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                onError={() => setImageError(true)}
-                sizes="(max-width: 768px) 160px, 200px"
+                className="object-cover"
+                loading="lazy" // 명시적으로 지연 로딩 설정
+                decoding="async" // 이미지 해독을 비동기로 처리
+                sizes="(max-width: 768px) 140px, 180px"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-dark-100">
@@ -78,10 +79,10 @@ export default function MovieCard({ movie, index = 0, showQuickView = true }: Mo
 
           {/* Info - 중앙 정렬 */}
           <div className="mt-2 px-1 text-center">
-            <h3 className="text-sm font-medium text-white truncate group-hover:text-primary-400 transition">
+            <h3 className="text-sm font-bold text-primary-900 truncate group-hover:text-primary-600 transition">
               {movie.title_ko || movie.title}
             </h3>
-            <div className="flex items-center justify-center gap-1.5 text-xs text-white/50 mt-1">
+            <div className="flex items-center justify-center gap-1.5 text-xs text-content-muted mt-1">
               <span>{formatDate(movie.release_date)}</span>
               {movie.genres.length > 0 && (
                 <>

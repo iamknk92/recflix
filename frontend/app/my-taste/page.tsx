@@ -89,17 +89,17 @@ export default function MyTastePage() {
           <p className="text-content-primary text-2xl font-bold mb-2">취향 분석 준비 중이에요</p>
           {totalRated === 0 ? (
             <p className="text-content-muted mb-3">
-              영화 <span className="text-red-400 font-semibold">5편</span> 이상 평가하면 취향 분석이 시작돼요!
+              영화 <span className="text-primary-500 font-semibold">5편</span> 이상 평가하면 취향 분석이 시작돼요!
             </p>
           ) : (
             <p className="text-content-muted mb-3">
-              현재 <span className="text-red-400 font-semibold">{totalRated}편</span> 평가됨 —{" "}
-              <span className="text-yellow-400 font-semibold">{remaining}편</span> 더 평가하면 분석이 시작돼요!
+              현재 <span className="text-primary-500 font-semibold">{totalRated}편</span> 평가됨 —{" "}
+              <span className="text-primary-400 font-semibold">{remaining}편</span> 더 평가하면 분석이 시작돼요!
             </p>
           )}
           <div className="w-64 mx-auto bg-surface-elevated rounded-full h-2 mb-8">
             <div
-              className="bg-red-600 h-2 rounded-full transition-all"
+              className="bg-primary-500 h-2 rounded-full transition-all"
               style={{ width: `${(totalRated / MIN_RATINGS_FOR_ANALYSIS) * 100}%` }}
             />
           </div>

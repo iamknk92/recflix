@@ -98,8 +98,8 @@ export default function Header() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled || mobileMenuOpen
-            ? "bg-surface-raised/95 backdrop-blur-sm shadow-lg"
-            : "bg-gradient-to-b from-dark-300/80 to-transparent"
+            ? "bg-surface-base/95 backdrop-blur-md shadow-sm border-b border-border"
+            : "bg-gradient-to-b from-surface-base/80 to-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-8">
@@ -152,7 +152,7 @@ export default function Header() {
               {/* Search Button - Mobile */}
               <button
                 onClick={() => setSearchOpen(!searchOpen)}
-                className="md:hidden p-2 text-white/70 hover:text-white transition"
+                className="md:hidden p-2 text-content-muted hover:text-content-primary transition"
                 aria-label="검색"
               >
                 <Search className="w-5 h-5" />
@@ -201,7 +201,7 @@ export default function Header() {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-white/70 hover:text-white transition z-10"
+                className="md:hidden p-2 text-content-muted hover:text-content-primary transition z-10"
                 aria-label="메뉴"
               >
                 {mobileMenuOpen ? (
@@ -248,7 +248,7 @@ export default function Header() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/60 z-40 md:hidden"
+              className="fixed inset-0 bg-black/30 z-40 md:hidden"
             />
 
             {/* Menu Panel */}
@@ -257,12 +257,12 @@ export default function Header() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed top-0 right-0 bottom-0 w-72 bg-surface-raised z-50 md:hidden shadow-2xl"
+              className="fixed top-0 right-0 bottom-0 w-72 bg-surface-card z-50 md:hidden shadow-2xl border-l border-border"
             >
               <div className="flex flex-col h-full pt-16">
                 {/* Weather */}
                 {weather && (
-                  <div className="px-4 py-3 border-b border-white/10">
+                  <div className="px-4 py-3 border-b border-border">
                     <div className="flex items-center space-x-3">
                       <span className="text-2xl">
                         {weather.condition === "sunny" && "☀️"}
@@ -271,8 +271,8 @@ export default function Header() {
                         {weather.condition === "snowy" && "❄️"}
                       </span>
                       <div>
-                        <p className="text-white font-medium">{weather.temperature}°C</p>
-                        <p className="text-white/60 text-sm">{weather.city}</p>
+                        <p className="text-content-primary font-medium">{weather.temperature}°C</p>
+                        <p className="text-content-muted text-sm">{weather.city}</p>
                       </div>
                     </div>
                   </div>
@@ -289,7 +289,7 @@ export default function Header() {
                         className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
                           isActivePath(item.href)
                             ? "bg-primary-600/20 text-primary-400"
-                            : "text-content-secondary hover:bg-white/5"
+                            : "text-content-secondary hover:bg-surface-raised"
                         }`}
                       >
                         <Icon className="w-5 h-5" />
@@ -300,7 +300,7 @@ export default function Header() {
 
                   {isAuthenticated && (
                     <>
-                      <div className="h-px bg-white/10 my-2" />
+                      <div className="h-px bg-border my-2" />
                       {authNavItems.map((item) => {
                         const Icon = item.icon;
                         return (
@@ -310,7 +310,7 @@ export default function Header() {
                             className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
                               isActivePath(item.href)
                                 ? "bg-primary-600/20 text-primary-400"
-                                : "text-white/80 hover:bg-white/5"
+                                : "text-content-secondary hover:bg-surface-raised"
                             }`}
                           >
                             <Icon className="w-5 h-5" />
@@ -323,12 +323,12 @@ export default function Header() {
                 </nav>
 
                 {/* User Section */}
-                <div className="px-4 py-4 border-t border-white/10">
+                <div className="px-4 py-4 border-t border-border">
                   {isAuthenticated ? (
                     <div className="space-y-3">
                       <Link
                         href="/profile"
-                        className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/5 transition"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-surface-raised transition"
                       >
                         <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center">
                           <span className="font-medium">
@@ -345,7 +345,7 @@ export default function Header() {
                           logout();
                           setMobileMenuOpen(false);
                         }}
-                        className="flex items-center space-x-3 px-4 py-3 w-full text-left text-content-muted hover:text-content-primary hover:bg-white/5 rounded-lg transition"
+                        className="flex items-center space-x-3 px-4 py-3 w-full text-left text-content-muted hover:text-content-primary hover:bg-surface-raised rounded-lg transition"
                       >
                         <LogOut className="w-5 h-5" />
                         <span>로그아웃</span>
@@ -361,7 +361,7 @@ export default function Header() {
                       </Link>
                       <Link
                         href="/signup"
-                        className="block w-full px-4 py-3 bg-white/10 hover:bg-white/20 text-white text-center rounded-lg transition"
+                        className="block w-full px-4 py-3 bg-surface-raised hover:bg-surface-elevated text-content-secondary border border-border text-center rounded-lg transition"
                       >
                         회원가입
                       </Link>

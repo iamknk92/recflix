@@ -197,9 +197,9 @@ function SunAnimation() {
 // Compact weather indicator for header
 export function WeatherIndicator({ weather }: { weather: Weather }) {
   return (
-    <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 backdrop-blur-sm">
+    <div className="flex items-center gap-2 rounded-full bg-surface-raised px-3 py-1.5 border border-border">
       <span className="text-lg">{weatherEmojis[weather.condition]}</span>
-      <span className="text-sm font-medium text-white">
+      <span className="text-sm font-bold text-primary-900">
         {weather.temperature}°C
       </span>
     </div>

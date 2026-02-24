@@ -218,6 +218,38 @@ body {
   animation: shimmer 1.5s infinite;
 }
 
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ================================================================
+   LIGHT THEME TEXT FIX
+   — 밝은 배경에서 text-white 클래스가 적용된 요소들을
+     어두운 글씨로 덮어씌우기 (포스터 배너 영역은 제외)
+   ================================================================ */
+
+/* 메인 콘텐츠 영역의 흰 글씨 → 어두운 글씨 */
+.space-y-8 .text-white {
+  color: var(--content-primary) !important;
+}
+
+.space-y-8 .text-white\/60 {
+  color: var(--content-muted) !important;
+}
+
+.space-y-8 .text-white\/70 {
+  color: var(--content-muted) !important;
+}
+
+.space-y-8 .text-white\/80 {
+  color: var(--content-secondary) !important;
+}
+
+.space-y-8 .text-white\/90 {
+  color: var(--content-secondary) !important;
+}
+
 /* ================================================================
    UTILITY LAYERS
    ================================================================ */
@@ -284,5 +316,13 @@ body {
 
   .text-section-heading {
     @apply text-section-title text-content-primary;
+  }
+  .font-sharp {
+  -webkit-font-smoothing: antialiased;
+  text-shadow: 0 0 1px rgba(0,0,0,0.05);
+  }
+  /* 로딩 스켈레톤에 부드러운 애니메이션 추가 */
+.skeleton {
+  @apply animate-pulse bg-surface-elevated rounded-xl;
   }
 }

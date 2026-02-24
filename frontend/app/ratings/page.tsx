@@ -325,7 +325,7 @@ export default function RatingsPage() {
               exit={{ opacity: 0 }}
               className="text-center py-12"
             >
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-white/5 rounded-full mb-6">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-surface-raised rounded-full mb-6">
                 <Star className="w-10 h-10 text-content-subtle" />
               </div>
               <h3 className="text-xl font-semibold text-content-primary mb-2">

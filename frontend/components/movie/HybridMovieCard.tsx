@@ -62,7 +62,7 @@ export default function HybridMovieCard({ movie, index = 0, showQuickView = true
       >
         <Link href={`/movies/${movie.id}`}>
           {/* Poster Container */}
-          <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-dark-100 ring-2 ring-primary-500/30 group-hover:ring-primary-500/70 transition-all duration-300 cursor-pointer">
+          <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-surface-raised ring-2 ring-primary-500/30 group-hover:ring-primary-500/70 transition-all duration-300 cursor-pointer">
             {movie.poster_path && !imageError ? (
               <Image
                 src={getImageUrl(movie.poster_path, "w342")}
@@ -73,8 +73,8 @@ export default function HybridMovieCard({ movie, index = 0, showQuickView = true
                 sizes="(max-width: 640px) 160px, 180px"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-dark-100">
-                <span className="text-white/30 text-4xl">🎬</span>
+              <div className="w-full h-full flex items-center justify-center bg-surface-raised">
+                <span className="text-content-subtle text-4xl">🎬</span>
               </div>
             )}
 
@@ -116,11 +116,11 @@ export default function HybridMovieCard({ movie, index = 0, showQuickView = true
 
           {/* Info - 중앙 정렬 */}
           <div className="mt-2 space-y-1 text-center">
-            <h3 className="text-white font-medium text-sm truncate group-hover:text-primary-400 transition">
+            <h3 className="text-content-primary font-medium text-sm truncate group-hover:text-primary-500 transition">
               {displayTitle}
             </h3>
 
-            <div className="flex items-center justify-center gap-1.5 text-xs text-white/50">
+            <div className="flex items-center justify-center gap-1.5 text-xs text-content-muted">
               {year && <span>{year}</span>}
               {movie.genres.length > 0 && (
                 <>

@@ -115,7 +115,7 @@ export default function MovieDetailPage() {
 
   if (error || !movie) {
     return (
-      <div className="min-h-screen bg-dark-200 pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-surface-base pt-20 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500 text-lg mb-4">{error || "영화를 찾을 수 없습니다."}</p>
           <button
@@ -133,7 +133,7 @@ export default function MovieDetailPage() {
   const overview = movie.overview_ko || movie.overview;
 
   return (
-    <div className="min-h-screen bg-dark-200">
+    <div className="min-h-screen bg-surface-base">
       {/* Hero Section with Backdrop */}
       <div className="relative h-[60vh] md:h-[70vh]">
         {/* Backdrop Image */}
@@ -147,11 +147,11 @@ export default function MovieDetailPage() {
               priority
             />
           ) : (
-            <div className="w-full h-full bg-dark-100" />
+            <div className="w-full h-full bg-surface-raised" />
           )}
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-200 via-dark-200/70 to-dark-200/30" />
-          <div className="absolute inset-0 bg-gradient-to-r from-dark-200/90 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-surface-base via-surface-base/70 to-surface-base/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-surface-base/90 via-transparent to-transparent" />
         </div>
 
         {/* Back Button */}
@@ -183,7 +183,7 @@ export default function MovieDetailPage() {
                     className="object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-dark-100 flex items-center justify-center">
+                  <div className="w-full h-full bg-surface-raised flex items-center justify-center">
                     <span className="text-4xl">🎬</span>
                   </div>
                 )}
@@ -205,7 +205,7 @@ export default function MovieDetailPage() {
                     className="object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-dark-100 flex items-center justify-center">
+                  <div className="w-full h-full bg-surface-raised flex items-center justify-center">
                     <span className="text-6xl">🎬</span>
                   </div>
                 )}
@@ -232,7 +232,7 @@ export default function MovieDetailPage() {
               {/* Catchphrase */}
               <div className="mb-3 sm:mb-4">
                 {catchphraseLoading ? (
-                  <div className="h-6 sm:h-7 w-48 sm:w-64 bg-white/10 animate-pulse rounded" />
+                  <div className="h-6 sm:h-7 w-48 sm:w-64 bg-white/20 animate-pulse rounded" />
                 ) : (catchphrase || movie.tagline) && (
                   <p className="text-white/80 italic text-sm sm:text-base md:text-lg line-clamp-2">
                     &quot;{catchphrase || movie.tagline}&quot;
@@ -281,7 +281,7 @@ export default function MovieDetailPage() {
                     <Link
                       key={genreName || index}
                       href={`/movies?genre=${encodeURIComponent(genreName)}`}
-                      className="px-2 md:px-3 py-1 bg-white/10 hover:bg-white/20 rounded-full text-xs md:text-sm text-white/80 transition"
+                      className="px-2 md:px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-xs md:text-sm text-white transition"
                     >
                       {genreName}
                     </Link>
@@ -302,8 +302,8 @@ export default function MovieDetailPage() {
                   onClick={handleFavoriteClick}
                   className={`flex items-center space-x-1.5 md:space-x-2 px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-medium transition text-sm md:text-base ${
                     isFavorited
-                      ? "bg-red-500 hover:bg-red-600 active:bg-red-700 text-white"
-                      : "bg-white/10 hover:bg-white/20 active:bg-white/30 text-white"
+                      ? "bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white"
+                      : "bg-white/20 hover:bg-white/30 active:bg-white/40 text-white"
                   }`}
                 >
                   <Heart className={`w-4 h-4 md:w-5 md:h-5 ${isFavorited ? "fill-current" : ""}`} />
@@ -325,9 +325,9 @@ export default function MovieDetailPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="p-6 bg-dark-100 rounded-lg"
+              className="p-6 bg-surface-card rounded-card border border-border"
             >
-              <h2 className="text-lg font-semibold text-white mb-4">내 평점</h2>
+              <h2 className="text-lg font-semibold text-content-primary mb-4">내 평점</h2>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
                   {[1, 2, 3, 4, 5].map((score) => (
@@ -342,7 +342,7 @@ export default function MovieDetailPage() {
                         className={`w-8 h-8 transition-colors ${
                           score <= displayRating
                             ? "text-yellow-400 fill-yellow-400"
-                            : "text-white/30"
+                            : "text-content-subtle"
                         }`}
                       />
                     </button>
@@ -367,8 +367,8 @@ export default function MovieDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h2 className="text-xl font-semibold text-white mb-4">줄거리</h2>
-              <p className="text-white/80 leading-relaxed text-lg">
+              <h2 className="text-xl font-semibold text-content-primary mb-4">줄거리</h2>
+              <p className="text-content-secondary leading-relaxed text-lg">
                 {overview || "줄거리 정보가 없습니다."}
               </p>
             </motion.section>
@@ -380,7 +380,7 @@ export default function MovieDetailPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <h2 className="text-xl font-semibold text-white mb-4 flex items-center space-x-2">
+                <h2 className="text-xl font-semibold text-content-primary mb-4 flex items-center space-x-2">
                   <Users className="w-5 h-5" />
                   <span>출연진</span>
                 </h2>
@@ -389,12 +389,12 @@ export default function MovieDetailPage() {
                     <Link
                       key={person.id}
                       href={`/movies?query=${encodeURIComponent(person.name)}`}
-                      className="flex items-center space-x-3 p-3 bg-dark-100 hover:bg-dark-100/70 rounded-lg transition"
+                      className="flex items-center space-x-3 p-3 bg-surface-raised hover:bg-surface-elevated rounded-lg transition border border-border"
                     >
-                      <div className="w-10 h-10 bg-dark-200 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Users className="w-5 h-5 text-white/30" />
+                      <div className="w-10 h-10 bg-surface-elevated rounded-full flex items-center justify-center flex-shrink-0">
+                        <Users className="w-5 h-5 text-content-subtle" />
                       </div>
-                      <span className="text-white/80 text-sm truncate">{person.name}</span>
+                      <span className="text-content-secondary text-sm truncate">{person.name}</span>
                     </Link>
                   ))}
                 </div>
@@ -408,7 +408,7 @@ export default function MovieDetailPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                <h2 className="text-xl font-semibold text-white mb-4">비슷한 영화</h2>
+                <h2 className="text-xl font-semibold text-content-primary mb-4">비슷한 영화</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                   {similar.slice(0, 6).map((m, i) => (
                     <MovieCard key={m.id} movie={m} index={i} />
@@ -426,24 +426,24 @@ export default function MovieDetailPage() {
             className="space-y-6"
           >
             {/* Movie Info Card */}
-            <div className="p-6 bg-dark-100 rounded-lg space-y-4">
-              <h3 className="text-lg font-semibold text-white">영화 정보</h3>
+            <div className="p-6 bg-surface-card rounded-card border border-border space-y-4">
+              <h3 className="text-lg font-semibold text-content-primary">영화 정보</h3>
 
               {/* Countries */}
               {movie.countries && movie.countries.length > 0 && (
                 <div>
-                  <div className="flex items-center space-x-2 text-white/50 text-sm mb-1">
+                  <div className="flex items-center space-x-2 text-content-muted text-sm mb-1">
                     <Globe className="w-4 h-4" />
                     <span>제작 국가</span>
                   </div>
-                  <p className="text-white/80">{movie.countries.join(", ")}</p>
+                  <p className="text-content-secondary">{movie.countries.join(", ")}</p>
                 </div>
               )}
 
               {/* Keywords */}
               {movie.keywords && movie.keywords.length > 0 && (
                 <div>
-                  <div className="flex items-center space-x-2 text-white/50 text-sm mb-2">
+                  <div className="flex items-center space-x-2 text-content-muted text-sm mb-2">
                     <Tag className="w-4 h-4" />
                     <span>키워드</span>
                   </div>
@@ -451,7 +451,7 @@ export default function MovieDetailPage() {
                     {movie.keywords.slice(0, 10).map((keyword) => (
                       <span
                         key={keyword}
-                        className="px-2 py-1 bg-dark-200 rounded text-xs text-white/60"
+                        className="px-2 py-1 bg-surface-raised rounded text-xs text-content-muted border border-border"
                       >
                         {keyword}
                       </span>
@@ -462,15 +462,15 @@ export default function MovieDetailPage() {
 
               {/* Popularity */}
               <div>
-                <p className="text-white/50 text-sm mb-1">인기도</p>
-                <p className="text-white/80">{movie.popularity.toFixed(1)}</p>
+                <p className="text-content-muted text-sm mb-1">인기도</p>
+                <p className="text-content-secondary">{movie.popularity.toFixed(1)}</p>
               </div>
             </div>
 
             {/* MBTI Scores (if available) */}
             {movie.mbti_scores && Object.keys(movie.mbti_scores).length > 0 && (
-              <div className="p-6 bg-dark-100 rounded-lg">
-                <h3 className="text-lg font-semibold text-white mb-4">MBTI 추천 점수</h3>
+              <div className="p-6 bg-surface-card rounded-card border border-border">
+                <h3 className="text-lg font-semibold text-content-primary mb-4">MBTI 추천 점수</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {Object.entries(movie.mbti_scores)
                     .sort(([, a], [, b]) => b - a)
@@ -478,9 +478,9 @@ export default function MovieDetailPage() {
                     .map(([mbti, score]) => (
                       <div
                         key={mbti}
-                        className="flex items-center justify-between p-2 bg-dark-200 rounded"
+                        className="flex items-center justify-between p-2 bg-surface-raised rounded border border-border"
                       >
-                        <span className="text-white/80 font-medium">{mbti}</span>
+                        <span className="text-content-secondary font-medium">{mbti}</span>
                         <span className="text-primary-400">
                           {(Number(score) * 100).toFixed(0)}%
                         </span>
@@ -492,8 +492,8 @@ export default function MovieDetailPage() {
 
             {/* Weather Scores (if available) */}
             {movie.weather_scores && Object.keys(movie.weather_scores).length > 0 && (
-              <div className="p-6 bg-dark-100 rounded-lg">
-                <h3 className="text-lg font-semibold text-white mb-4">날씨별 추천</h3>
+              <div className="p-6 bg-surface-card rounded-card border border-border">
+                <h3 className="text-lg font-semibold text-content-primary mb-4">날씨별 추천</h3>
                 <div className="space-y-2">
                   {Object.entries(movie.weather_scores)
                     .sort(([, a], [, b]) => b - a)
@@ -513,9 +513,9 @@ export default function MovieDetailPage() {
                       return (
                         <div
                           key={weather}
-                          className="flex items-center justify-between p-2 bg-dark-200 rounded"
+                          className="flex items-center justify-between p-2 bg-surface-raised rounded border border-border"
                         >
-                          <span className="text-white/80">
+                          <span className="text-content-secondary">
                             {weatherEmoji[weather]} {weatherLabel[weather]}
                           </span>
                           <span className="text-blue-400">
@@ -537,7 +537,7 @@ export default function MovieDetailPage() {
 // Skeleton Component for Loading State
 function MovieDetailSkeleton() {
   return (
-    <div className="min-h-screen bg-dark-200">
+    <div className="min-h-screen bg-surface-base">
       {/* Hero Skeleton */}
       <div className="relative h-[50vh] md:h-[70vh]">
         <Skeleton className="absolute inset-0" />

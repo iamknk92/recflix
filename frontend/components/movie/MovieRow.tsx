@@ -79,20 +79,20 @@ export default function MovieRow({ title, description, movies, displayCount = 20
     <section className="relative group/row">
       {/* Header - 한 줄 배치 */}
       <div className="mb-3 flex items-center gap-3">
-        <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-primary-900">{title}</h2>
         {description && (
-          <p className="text-sm text-gray-400">{description}</p>
+          <p className="text-sm text-primary-700/70">{description}</p>
         )}
         {/* Refresh Button */}
         {movies.length > displayCount && (
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="ml-auto p-1.5 rounded-full hover:bg-white/10 transition-colors group/refresh"
+            className="ml-auto p-1.5 rounded-full hover:bg-surface-raised transition-colors group/refresh"
             title="다른 영화 보기"
           >
             <RefreshCw
-              className={`w-4 h-4 text-gray-400 group-hover/refresh:text-white transition-colors ${
+              className={`w-4 h-4 text-content-muted group-hover/refresh:text-content-primary transition-colors ${
                 isRefreshing ? "animate-spin" : ""
               }`}
             />
