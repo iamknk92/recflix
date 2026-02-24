@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import MobileNav from "@/components/layout/MobileNav";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "RecFlix - Personalized Movie Recommendations",
@@ -32,9 +33,11 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="min-h-screen bg-surface-base">
-        <Header />
-        <main className="pt-14 md:pt-16 pb-16 md:pb-0">{children}</main>
-        <MobileNav />
+        <Providers>
+          <Header />
+          <main className="pt-14 md:pt-16 pb-16 md:pb-0">{children}</main>
+          <MobileNav />
+        </Providers>
       </body>
     </html>
   );
