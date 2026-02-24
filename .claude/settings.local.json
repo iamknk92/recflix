@@ -107,7 +107,16 @@
       "Bash(PGPASSWORD=recflix123 pg_restore:*)",
       "Bash(docker ps:*)",
       "Bash(docker.exe ps:*)",
-      "Bash(powershell.exe:*)"
+      "Bash(powershell.exe:*)",
+      "Bash(start \"\" \"http://localhost:3000\")",
+      "Bash(git -C /c/dev/recflix add -f frontend/lib/utils.ts)",
+      "Bash(git -C /c/dev/recflix status --short)",
+      "Bash(source:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(npm run dev:fast:*)",
+      "Bash(xargs:*)",
+      "Bash(sc query:*)",
+      "Bash(grep:*)"
     ]
   }
 }
