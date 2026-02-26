@@ -76,14 +76,14 @@ export default function SearchAutocomplete({
   const handlePersonClick = (personName: string) => {
     setIsOpen(false);
     setQuery("");
-    router.push(`/movies?query=${encodeURIComponent(personName)}`);
+    router.push(`/search?q=${encodeURIComponent(personName)}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       setIsOpen(false);
-      router.push(`/movies?query=${encodeURIComponent(query.trim())}`);
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
     }
   };
 
