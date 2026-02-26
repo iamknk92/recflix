@@ -172,6 +172,36 @@ def get_genres(db: Session = Depends(get_db)):
     return genres
 
 
+@router.get("/people/{person_id}")
+def get_person(
+    person_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get person details and their movies"""
+    person = db.query(Person).filter(Person.id == person_id).first()
+    if not person:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Person not found")
+
+    movies_with_roles = (
+        db.query(Movie, movie_cast.c.role)
+        .join(movie_cast, Movie.id == movie_cast.c.movie_id)
+        .filter(movie_cast.c.person_id == person_id)
+        .order_by(Movie.popularity.desc().nulls_last())
+        .all()
+    )
+
+    roles = list({role for _, role in movies_with_roles if role})
+    movies = [MovieListItem.from_orm_with_genres(movie) for movie, _ in movies_with_roles]
+
+    return {
+        "id": person.id,
+        "name": person.name,
+        "roles": roles,
+        "movies": movies,
+        "total": len(movies),
+    }
+
+
 @router.get("/{movie_id}", response_model=MovieDetail)
 def get_movie(movie_id: int, db: Session = Depends(get_db)):
     """Get movie detail by ID"""

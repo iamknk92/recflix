@@ -101,12 +101,12 @@ export default function SearchAutocomplete({
     }
   };
 
-  const handlePersonClick = (personName: string) => {
+  const handlePersonClick = (personId: number, personName: string) => {
     saveRecent(personName);
     setRecentSearches(loadRecent());
     setIsOpen(false);
     setQuery("");
-    router.push(`/search?q=${encodeURIComponent(personName)}`);
+    router.push(`/people/${personId}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -293,7 +293,7 @@ export default function SearchAutocomplete({
                         {results.people.map((person) => (
                           <button
                             key={person.id}
-                            onClick={() => handlePersonClick(person.name)}
+                            onClick={() => handlePersonClick(person.id, person.name)}
                             className="w-full flex items-center space-x-3 px-4 py-3 hover:bg-surface-raised transition text-left"
                           >
                             <div className="w-10 h-10 flex-shrink-0 bg-surface-raised rounded-full flex items-center justify-center">

@@ -114,7 +114,7 @@ function SearchPageContent() {
                   {people.map((person) => (
                     <Link
                       key={person.id}
-                      href={`/search?q=${encodeURIComponent(person.name)}`}
+                      href={`/people/${person.id}`}
                       className="flex items-center gap-3 p-3 bg-surface-card border border-border rounded-xl hover:border-primary-500 hover:bg-primary-500/5 transition group"
                     >
                       <div className="w-10 h-10 rounded-full bg-surface-raised flex items-center justify-center flex-shrink-0 group-hover:bg-primary-500/10 transition">

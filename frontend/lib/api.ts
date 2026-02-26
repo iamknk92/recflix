@@ -65,6 +65,16 @@ export async function getMovies(params?: {
   );
 }
 
+export async function getPerson(id: number): Promise<{
+  id: number;
+  name: string;
+  roles: string[];
+  movies: Movie[];
+  total: number;
+}> {
+  return fetchAPI(`/movies/people/${id}`);
+}
+
 export async function getMovie(id: number): Promise<MovieDetail> {
   return fetchAPI<MovieDetail>(`/movies/${id}`);
 }

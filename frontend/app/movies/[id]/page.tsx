@@ -389,7 +389,7 @@ export default function MovieDetailPage() {
                   {movie.cast_members.slice(0, 8).map((person) => (
                     <Link
                       key={person.id}
-                      href={`/search?q=${encodeURIComponent(person.name)}`}
+                      href={`/people/${person.id}`}
                       className="flex items-center space-x-3 p-3 bg-surface-raised hover:bg-surface-elevated rounded-lg transition border border-border"
                     >
                       <div className="w-10 h-10 bg-surface-elevated rounded-full flex items-center justify-center flex-shrink-0">
