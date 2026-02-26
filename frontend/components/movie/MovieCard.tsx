@@ -34,17 +34,18 @@ export default function MovieCard({ movie, index = 0, showQuickView = true }: Mo
         className="w-full group"
       >
         <Link href={`/movies/${movie.id}`}>
-          {/* Poster */}
-          <div className="relative aspect-[2/3] w-[180px] md:w-[180px] rounded-xl overflow-hidden shadow-sm bg-surface-card">
+          {/* Poster — w-full로 부모 너비에 맞춤 */}
+          <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden shadow-sm bg-surface-card">
             {!imageError && movie.poster_path ? (
               <Image
                 src={getImageUrl(movie.poster_path, "w342")}
                 alt={movie.title_ko || movie.title}
                 fill
                 className="object-cover"
-                loading="lazy" // 명시적으로 지연 로딩 설정
-                decoding="async" // 이미지 해독을 비동기로 처리
-                sizes="(max-width: 768px) 140px, 180px"
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 640px) 140px, (max-width: 1024px) 160px, 180px"
+                onError={() => setImageError(true)}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-dark-100">
@@ -77,7 +78,7 @@ export default function MovieCard({ movie, index = 0, showQuickView = true }: Mo
             </div>
           </div>
 
-          {/* Info - 중앙 정렬 */}
+          {/* Info */}
           <div className="mt-2 px-1 text-center">
             <h3 className="text-sm font-bold text-primary-900 truncate group-hover:text-primary-600 transition">
               {movie.title_ko || movie.title}
@@ -87,7 +88,11 @@ export default function MovieCard({ movie, index = 0, showQuickView = true }: Mo
               {movie.genres.length > 0 && (
                 <>
                   <span>·</span>
-                  <span className="truncate">{typeof movie.genres[0] === 'string' ? movie.genres[0] : (movie.genres[0] as any)?.name_ko || (movie.genres[0] as any)?.name}</span>
+                  <span className="truncate">
+                    {typeof movie.genres[0] === "string"
+                      ? movie.genres[0]
+                      : (movie.genres[0] as any)?.name_ko || (movie.genres[0] as any)?.name}
+                  </span>
                 </>
               )}
             </div>

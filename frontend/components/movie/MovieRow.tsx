@@ -130,10 +130,12 @@ export default function MovieRow({ title, description, movies, displayCount = 20
         <div
           ref={rowRef}
           onScroll={handleScroll}
-          className="flex space-x-3 overflow-x-auto hide-scrollbar pb-4"
+          className="flex gap-4 overflow-x-auto hide-scrollbar pb-4"
         >
           {displayedMovies.map((movie, index) => (
-            <MovieCard key={movie.id} movie={movie} index={index} />
+            <div key={movie.id} className="w-[140px] md:w-[160px] lg:w-[180px] flex-shrink-0">
+              <MovieCard movie={movie} index={index} />
+            </div>
           ))}
         </div>
       </div>
