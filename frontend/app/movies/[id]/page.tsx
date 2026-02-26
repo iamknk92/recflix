@@ -60,7 +60,6 @@ export default function MovieDetailPage() {
         setMovie(movieData);
         setSimilar(similarData);
 
-        // 캐치프레이즈는 영화 데이터 로드 후 별도로 요청 (비동기)
         setCatchphraseLoading(true);
         getCatchphrase(movieId)
           .then((res) => setCatchphrase(res.catchphrase))
@@ -149,9 +148,10 @@ export default function MovieDetailPage() {
           ) : (
             <div className="w-full h-full bg-surface-raised" />
           )}
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-surface-base via-surface-base/70 to-surface-base/30" />
-          <div className="absolute inset-0 bg-gradient-to-r from-surface-base/90 via-transparent to-transparent" />
+          {/* Gradient Overlay — 강하게 수정 */}
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-surface-base via-surface-base/90 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-surface-base/95 via-surface-base/70 to-surface-base/40" />
         </div>
 
         {/* Back Button */}
@@ -219,14 +219,14 @@ export default function MovieDetailPage() {
               transition={{ delay: 0.1 }}
               className="flex-1 min-w-0"
             >
-              {/* Title */}
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-1 md:mb-2 line-clamp-2">
+              {/* Title — 텍스트 그림자 추가 */}
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-1 md:mb-2 line-clamp-2 drop-shadow-lg">
                 {displayTitle}
               </h1>
 
               {/* Original Title */}
               {movie.title_ko && movie.title !== movie.title_ko && (
-                <p className="text-white/60 text-sm md:text-lg mb-2 md:mb-4 truncate">{movie.title}</p>
+                <p className="text-white/60 text-sm md:text-lg mb-2 md:mb-4 truncate drop-shadow-md">{movie.title}</p>
               )}
 
               {/* Catchphrase */}
@@ -234,14 +234,14 @@ export default function MovieDetailPage() {
                 {catchphraseLoading ? (
                   <div className="h-6 sm:h-7 w-48 sm:w-64 bg-white/20 animate-pulse rounded" />
                 ) : (catchphrase || movie.tagline) && (
-                  <p className="text-white/80 italic text-sm sm:text-base md:text-lg line-clamp-2">
+                  <p className="text-white/80 italic text-sm sm:text-base md:text-lg line-clamp-2 drop-shadow-md">
                     &quot;{catchphrase || movie.tagline}&quot;
                   </p>
                 )}
               </div>
 
               {/* Meta Info */}
-              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs sm:text-sm md:text-base text-white/70 mb-4 md:mb-6">
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs sm:text-sm md:text-base text-white/70 mb-4 md:mb-6 drop-shadow-sm">
                 {/* Rating */}
                 <div className="flex items-center space-x-1 text-yellow-400">
                   <Star className="w-4 h-4 md:w-5 md:h-5 fill-current" />
@@ -291,13 +291,11 @@ export default function MovieDetailPage() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-2 md:gap-3">
-                {/* Play Button (placeholder) */}
                 <button className="flex items-center space-x-1.5 md:space-x-2 px-4 md:px-6 py-2.5 md:py-3 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-medium rounded-lg transition text-sm md:text-base">
                   <Play className="w-4 h-4 md:w-5 md:h-5 fill-white" />
                   <span>시청하기</span>
                 </button>
 
-                {/* Favorite Button */}
                 <button
                   onClick={handleFavoriteClick}
                   className={`flex items-center space-x-1.5 md:space-x-2 px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-medium transition text-sm md:text-base ${
@@ -425,11 +423,9 @@ export default function MovieDetailPage() {
             transition={{ delay: 0.3 }}
             className="space-y-6"
           >
-            {/* Movie Info Card */}
             <div className="p-6 bg-surface-card rounded-card border border-border space-y-4">
               <h3 className="text-lg font-semibold text-content-primary">영화 정보</h3>
 
-              {/* Countries */}
               {movie.countries && movie.countries.length > 0 && (
                 <div>
                   <div className="flex items-center space-x-2 text-content-muted text-sm mb-1">
@@ -440,7 +436,6 @@ export default function MovieDetailPage() {
                 </div>
               )}
 
-              {/* Keywords */}
               {movie.keywords && movie.keywords.length > 0 && (
                 <div>
                   <div className="flex items-center space-x-2 text-content-muted text-sm mb-2">
@@ -460,14 +455,12 @@ export default function MovieDetailPage() {
                 </div>
               )}
 
-              {/* Popularity */}
               <div>
                 <p className="text-content-muted text-sm mb-1">인기도</p>
                 <p className="text-content-secondary">{movie.popularity.toFixed(1)}</p>
               </div>
             </div>
 
-            {/* MBTI Scores (if available) */}
             {movie.mbti_scores && Object.keys(movie.mbti_scores).length > 0 && (
               <div className="p-6 bg-surface-card rounded-card border border-border">
                 <h3 className="text-lg font-semibold text-content-primary mb-4">MBTI 추천 점수</h3>
@@ -490,7 +483,6 @@ export default function MovieDetailPage() {
               </div>
             )}
 
-            {/* Weather Scores (if available) */}
             {movie.weather_scores && Object.keys(movie.weather_scores).length > 0 && (
               <div className="p-6 bg-surface-card rounded-card border border-border">
                 <h3 className="text-lg font-semibold text-content-primary mb-4">날씨별 추천</h3>
@@ -534,11 +526,9 @@ export default function MovieDetailPage() {
   );
 }
 
-// Skeleton Component for Loading State
 function MovieDetailSkeleton() {
   return (
     <div className="min-h-screen bg-surface-base">
-      {/* Hero Skeleton */}
       <div className="relative h-[50vh] md:h-[70vh]">
         <Skeleton className="absolute inset-0" />
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 lg:p-12">
@@ -567,8 +557,6 @@ function MovieDetailSkeleton() {
           </div>
         </div>
       </div>
-
-      {/* Content Skeleton */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12 py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           <div className="lg:col-span-2 space-y-8">

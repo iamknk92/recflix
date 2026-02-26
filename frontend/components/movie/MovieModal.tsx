@@ -246,7 +246,9 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
                 <h3 className="text-lg font-semibold text-content-primary mb-4">비슷한 영화</h3>
                 <div className="flex space-x-3 overflow-x-auto hide-scrollbar pb-4">
                   {similar.map((m, i) => (
-                    <MovieCard key={m.id} movie={m} index={i} />
+                    <div key={m.id} className="w-[140px] flex-shrink-0">
+                      <MovieCard movie={m} index={i} />
+                    </div>
                   ))}
                 </div>
               </div>
