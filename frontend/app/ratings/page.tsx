@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, Film, Trash2, LogIn, Calendar, Cloud } from "lucide-react";
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getMyRatings, deleteRating, getPopularMovies } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { getImageUrl } from "@/lib/utils";
@@ -148,97 +149,62 @@ function RatingCard({
   );
 }
 
+const PAGE_SIZE = 20;
+
 export default function RatingsPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const queryClient = useQueryClient();
 
-  const [ratings, setRatings] = useState<RatingWithMovie[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [recommendedMovies, setRecommendedMovies] = useState<Movie[]>([]);
-
-  // Stats
-  const [stats, setStats] = useState({
-    totalCount: 0,
-    averageScore: 0,
+  const {
+    data: ratingsData,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["my-ratings"],
+    queryFn: ({ pageParam }) => getMyRatings(pageParam as number, PAGE_SIZE),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: RatingWithMovie[], allPages) =>
+      (lastPage as RatingWithMovie[]).length === PAGE_SIZE ? allPages.length + 1 : undefined,
+    enabled: isAuthenticated,
+    staleTime: 2 * 60 * 1000,
   });
 
-  const PAGE_SIZE = 20;
+  const ratings = (ratingsData?.pages.flat() ?? []) as RatingWithMovie[];
+  const totalCount = ratings.length;
+  const averageScore = totalCount > 0
+    ? ratings.reduce((sum, r) => sum + r.score, 0) / totalCount
+    : 0;
 
-  // Calculate stats
-  useEffect(() => {
-    if (ratings.length > 0) {
-      const total = ratings.length;
-      const avg = ratings.reduce((sum, r) => sum + r.score, 0) / total;
-      setStats({ totalCount: total, averageScore: avg });
-    }
-  }, [ratings]);
+  const { data: recommendedMovies = [] } = useQuery<Movie[]>({
+    queryKey: ["popular-movies"],
+    queryFn: () => getPopularMovies(12),
+    enabled: isAuthenticated && !isLoading && ratings.length === 0,
+    staleTime: 10 * 60 * 1000,
+  });
 
-  // Fetch ratings
-  const fetchRatings = useCallback(async (pageNum: number, append = false) => {
-    if (!isAuthenticated) return;
+  const deleteMutation = useMutation({
+    mutationFn: (movieId: number) => deleteRating(movieId),
+    onSuccess: (_, movieId) => {
+      queryClient.setQueryData(["my-ratings"], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page: RatingWithMovie[]) =>
+            page.filter((r) => r.movie_id !== movieId)
+          ),
+        };
+      });
+    },
+  });
 
-    try {
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
+  const deletingId = deleteMutation.isPending ? deleteMutation.variables : null;
 
-      const data = await getMyRatings(pageNum, PAGE_SIZE);
-
-      if (append) {
-        setRatings(prev => [...prev, ...data]);
-      } else {
-        setRatings(data);
-      }
-
-      setHasMore(data.length === PAGE_SIZE);
-
-      // If no ratings, get recommendations
-      if (data.length === 0 && pageNum === 1) {
-        const popular = await getPopularMovies(12);
-        setRecommendedMovies(popular);
-      }
-    } catch (error) {
-      console.error("Failed to fetch ratings:", error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      fetchRatings(1);
-    } else if (!authLoading && !isAuthenticated) {
-      setLoading(false);
-    }
-  }, [authLoading, isAuthenticated, fetchRatings]);
-
-  const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchRatings(nextPage, true);
-  };
-
-  const handleDelete = async (movieId: number) => {
+  const handleDelete = (movieId: number) => {
     if (!confirm("이 평점을 삭제하시겠습니까?")) return;
-
-    setDeletingId(movieId);
-
-    try {
-      await deleteRating(movieId);
-      setRatings(prev => prev.filter(r => r.movie_id !== movieId));
-    } catch (error) {
-      console.error("Failed to delete rating:", error);
-      alert("평점 삭제에 실패했습니다.");
-    } finally {
-      setDeletingId(null);
-    }
+    deleteMutation.mutate(movieId);
   };
 
   // Not logged in state
@@ -280,12 +246,12 @@ export default function RatingsPage() {
             <h1 className="text-page-heading">내 평점</h1>
           </div>
           <p className="text-content-muted">
-            {loading ? (
+            {isLoading ? (
               "불러오는 중..."
             ) : ratings.length > 0 ? (
               <span>
-                총 <span className="text-content-primary font-medium">{stats.totalCount}개</span> 영화 ·
-                평균 <span className="text-yellow-400 font-medium">{stats.averageScore.toFixed(1)}</span>점
+                총 <span className="text-content-primary font-medium">{totalCount}개</span> 영화 ·
+                평균 <span className="text-yellow-400 font-medium">{averageScore.toFixed(1)}</span>점
               </span>
             ) : (
               "아직 평점을 남긴 영화가 없습니다"
@@ -295,7 +261,7 @@ export default function RatingsPage() {
 
         {/* Content */}
         <AnimatePresence mode="wait">
-          {loading ? (
+          {isLoading ? (
             <motion.div
               key="skeleton"
               initial={{ opacity: 0 }}
@@ -379,14 +345,14 @@ export default function RatingsPage() {
               </div>
 
               {/* Load More */}
-              {hasMore && (
+              {hasNextPage && (
                 <div className="flex justify-center mt-8">
                   <button
-                    onClick={handleLoadMore}
-                    disabled={loadingMore}
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
                     className="btn-secondary disabled:opacity-50 flex items-center space-x-2"
                   >
-                    {loadingMore ? (
+                    {isFetchingNextPage ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         <span>불러오는 중...</span>
@@ -399,7 +365,7 @@ export default function RatingsPage() {
               )}
 
               {/* End of list */}
-              {!hasMore && ratings.length >= PAGE_SIZE && (
+              {!hasNextPage && ratings.length >= PAGE_SIZE && (
                 <p className="text-center text-content-subtle py-8">
                   모든 평점을 불러왔습니다
                 </p>

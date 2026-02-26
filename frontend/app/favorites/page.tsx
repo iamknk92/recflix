@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Film, Trash2, LogIn } from "lucide-react";
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getFavorites, toggleFavorite, getPopularMovies } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import type { Movie } from "@/types";
@@ -11,82 +12,57 @@ import MovieCard from "@/components/movie/MovieCard";
 import { MovieGridSkeleton } from "@/components/ui/Skeleton";
 import Link from "next/link";
 
+const PAGE_SIZE = 20;
+
 export default function FavoritesPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const queryClient = useQueryClient();
 
-  const [favorites, setFavorites] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [removingId, setRemovingId] = useState<number | null>(null);
-  const [recommendedMovies, setRecommendedMovies] = useState<Movie[]>([]);
+  const {
+    data: favoritesData,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["favorites"],
+    queryFn: ({ pageParam }) => getFavorites(pageParam as number, PAGE_SIZE),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage: Movie[], allPages) =>
+      (lastPage as Movie[]).length === PAGE_SIZE ? allPages.length + 1 : undefined,
+    enabled: isAuthenticated,
+    staleTime: 2 * 60 * 1000,
+  });
 
-  const PAGE_SIZE = 20;
+  const favorites = (favoritesData?.pages.flat() ?? []) as Movie[];
 
-  // Fetch favorites
-  const fetchFavorites = useCallback(async (pageNum: number, append = false) => {
-    if (!isAuthenticated) return;
+  const { data: recommendedMovies = [] } = useQuery<Movie[]>({
+    queryKey: ["popular-movies"],
+    queryFn: () => getPopularMovies(12),
+    enabled: isAuthenticated && !isLoading && favorites.length === 0,
+    staleTime: 10 * 60 * 1000,
+  });
 
-    try {
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
+  const removeMutation = useMutation({
+    mutationFn: (movieId: number) => toggleFavorite(movieId),
+    onSuccess: (_, movieId) => {
+      queryClient.setQueryData(["favorites"], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page: Movie[]) => page.filter((m) => m.id !== movieId)),
+        };
+      });
+    },
+  });
 
-      const data = await getFavorites(pageNum, PAGE_SIZE);
+  const removingId = removeMutation.isPending ? removeMutation.variables : null;
 
-      if (append) {
-        setFavorites(prev => [...prev, ...data]);
-      } else {
-        setFavorites(data);
-      }
-
-      setHasMore(data.length === PAGE_SIZE);
-
-      // If no favorites, get recommendations
-      if (data.length === 0 && pageNum === 1) {
-        const popular = await getPopularMovies(12);
-        setRecommendedMovies(popular);
-      }
-    } catch (error) {
-      console.error("Failed to fetch favorites:", error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      fetchFavorites(1);
-    } else if (!authLoading && !isAuthenticated) {
-      setLoading(false);
-    }
-  }, [authLoading, isAuthenticated, fetchFavorites]);
-
-  const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchFavorites(nextPage, true);
-  };
-
-  const handleRemoveFavorite = async (movieId: number, e: React.MouseEvent) => {
+  const handleRemoveFavorite = (movieId: number, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
-    setRemovingId(movieId);
-
-    try {
-      await toggleFavorite(movieId);
-      setFavorites(prev => prev.filter(m => m.id !== movieId));
-    } catch (error) {
-      console.error("Failed to remove favorite:", error);
-    } finally {
-      setRemovingId(null);
-    }
+    removeMutation.mutate(movieId);
   };
 
   // Not logged in state
@@ -128,13 +104,13 @@ export default function FavoritesPage() {
             <h1 className="text-page-heading">찜한 영화</h1>
           </div>
           <p className="text-content-muted">
-            {loading ? "불러오는 중..." : `총 ${favorites.length}개의 영화`}
+            {isLoading ? "불러오는 중..." : `총 ${favorites.length}개의 영화`}
           </p>
         </div>
 
         {/* Content */}
         <AnimatePresence mode="wait">
-          {loading ? (
+          {isLoading ? (
             <motion.div
               key="skeleton"
               initial={{ opacity: 0 }}
@@ -224,14 +200,14 @@ export default function FavoritesPage() {
               </div>
 
               {/* Load More */}
-              {hasMore && (
+              {hasNextPage && (
                 <div className="flex justify-center mt-8">
                   <button
-                    onClick={handleLoadMore}
-                    disabled={loadingMore}
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
                     className="btn-secondary disabled:opacity-50 flex items-center space-x-2"
                   >
-                    {loadingMore ? (
+                    {isFetchingNextPage ? (
                       <>
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         <span>불러오는 중...</span>
@@ -244,7 +220,7 @@ export default function FavoritesPage() {
               )}
 
               {/* End of list */}
-              {!hasMore && favorites.length >= PAGE_SIZE && (
+              {!hasNextPage && favorites.length >= PAGE_SIZE && (
                 <p className="text-center text-content-subtle py-8">
                   모든 찜한 영화를 불러왔습니다
                 </p>
