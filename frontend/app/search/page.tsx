@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, Film, User } from "lucide-react";
+import { Search, Film, User, ArrowUpDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getMovies, searchAutocomplete } from "@/lib/api";
@@ -12,11 +12,23 @@ import MovieCard from "@/components/movie/MovieCard";
 import { MovieGridSkeleton } from "@/components/ui/Skeleton";
 import Link from "next/link";
 
+const SORT_OPTIONS = [
+  { label: "인기순", sort_by: "popularity",     sort_order: "desc" },
+  { label: "평점순", sort_by: "weighted_score", sort_order: "desc" },
+  { label: "최신순", sort_by: "release_date",   sort_order: "desc" },
+  { label: "오래된 순", sort_by: "release_date", sort_order: "asc"  },
+] as const;
+
+type SortKey = typeof SORT_OPTIONS[number]["label"];
+
 function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const q = searchParams.get("q") || "";
   const [inputValue, setInputValue] = useState(q);
+  const [sortLabel, setSortLabel] = useState<SortKey>("인기순");
+
+  const currentSort = SORT_OPTIONS.find((o) => o.label === sortLabel)!;
 
   const {
     data: moviesData,
@@ -25,9 +37,15 @@ function SearchPageContent() {
     fetchNextPage,
     hasNextPage,
   } = useInfiniteQuery({
-    queryKey: ["search-movies", q],
+    queryKey: ["search-movies", q, currentSort.sort_by, currentSort.sort_order],
     queryFn: ({ pageParam }) =>
-      getMovies({ query: q, page: pageParam as number, page_size: 20 }),
+      getMovies({
+        query: q,
+        page: pageParam as number,
+        page_size: 20,
+        sort_by: currentSort.sort_by,
+        sort_order: currentSort.sort_order,
+      }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) =>
       lastPage.page < lastPage.total_pages ? allPages.length + 1 : undefined,
@@ -111,15 +129,38 @@ function SearchPageContent() {
 
             {/* Movies section */}
             <section>
-              <h2 className="text-lg font-semibold text-content-primary mb-4 flex items-center gap-2">
-                <Film className="w-5 h-5" />
-                영화
-                {!isLoading && (
-                  <span className="text-content-muted font-normal text-base">
-                    ({totalCount.toLocaleString()}건)
-                  </span>
+              {/* Header: 제목 + 정렬 */}
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+                <h2 className="text-lg font-semibold text-content-primary flex items-center gap-2">
+                  <Film className="w-5 h-5" />
+                  영화
+                  {!isLoading && (
+                    <span className="text-content-muted font-normal text-base">
+                      ({totalCount.toLocaleString()}건)
+                    </span>
+                  )}
+                </h2>
+
+                {/* Sort buttons */}
+                {movies.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <ArrowUpDown className="w-4 h-4 text-content-muted" />
+                    {SORT_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.label}
+                        onClick={() => setSortLabel(opt.label)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                          sortLabel === opt.label
+                            ? "bg-primary-500 text-white"
+                            : "bg-surface-raised text-content-muted hover:bg-surface-elevated hover:text-content-secondary"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 )}
-              </h2>
+              </div>
 
               {isLoading ? (
                 <MovieGridSkeleton count={12} />
@@ -136,6 +177,7 @@ function SearchPageContent() {
               ) : (
                 <>
                   <motion.div
+                    key={`${q}-${sortLabel}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"

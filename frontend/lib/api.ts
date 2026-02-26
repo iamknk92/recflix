@@ -49,6 +49,7 @@ export async function getMovies(params?: {
   page?: number;
   page_size?: number;
   sort_by?: string;
+  sort_order?: string;
 }) {
   const searchParams = new URLSearchParams();
   if (params?.query) searchParams.set("query", params.query);
@@ -56,6 +57,7 @@ export async function getMovies(params?: {
   if (params?.page) searchParams.set("page", params.page.toString());
   if (params?.page_size) searchParams.set("page_size", params.page_size.toString());
   if (params?.sort_by) searchParams.set("sort_by", params.sort_by);
+  if (params?.sort_order) searchParams.set("sort_order", params.sort_order);
 
   const query = searchParams.toString();
   return fetchAPI<{ items: Movie[]; total: number; page: number; total_pages: number }>(
