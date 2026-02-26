@@ -93,6 +93,24 @@ export default function SearchAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Keyboard shortcuts: / to focus, Esc to blur
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (e.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") {
+        e.preventDefault();
+        inputRef.current?.focus();
+        setIsOpen(true);
+      } else if (e.key === "Escape") {
+        inputRef.current?.blur();
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const handleMovieClick = (movieId: number) => {
     setIsOpen(false);
     setQuery("");
@@ -165,7 +183,7 @@ export default function SearchAutocomplete({
             placeholder={placeholder}
             className="w-full pl-12 pr-10 py-3 bg-surface-card border border-border rounded-lg text-content-primary placeholder-content-muted focus:outline-none focus:border-primary-500 transition"
           />
-          {query && (
+          {query ? (
             <button
               type="button"
               onClick={handleClear}
@@ -173,6 +191,10 @@ export default function SearchAutocomplete({
             >
               <X className="w-5 h-5" />
             </button>
+          ) : (
+            <kbd className="absolute right-4 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center px-1.5 py-0.5 text-xs font-mono text-content-subtle border border-border rounded opacity-60 select-none pointer-events-none">
+              /
+            </kbd>
           )}
         </div>
       </form>
