@@ -16,7 +16,6 @@ import {
   Tag,
   Globe,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { getMovie, getSimilarMovies, getCatchphrase } from "@/lib/api";
 import { getImageUrl, formatRuntime, formatDate } from "@/lib/utils";
 import { useInteractionStore } from "@/stores/interactionStore";
@@ -29,43 +28,57 @@ export default function MovieDetailPage() {
   const params = useParams();
   const router = useRouter();
   const movieId = Number(params.id);
-  const validId = !!movieId && !isNaN(movieId);
 
+  const [movie, setMovie] = useState<MovieDetail | null>(null);
+  const [similar, setSimilar] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [ratingHover, setRatingHover] = useState(0);
+  const [catchphrase, setCatchphrase] = useState<string | null>(null);
+  const [catchphraseLoading, setCatchphraseLoading] = useState(false);
 
   const { isAuthenticated } = useAuthStore();
   const { interactions, fetchInteraction, toggleFavorite, setRating } =
     useInteractionStore();
   const interaction = interactions[movieId];
 
-  const { data: movie, isLoading, isError } = useQuery<MovieDetail>({
-    queryKey: ["movie", movieId],
-    queryFn: () => getMovie(movieId),
-    enabled: validId,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: similar = [] } = useQuery<Movie[]>({
-    queryKey: ["similar-movies", movieId],
-    queryFn: () => getSimilarMovies(movieId, 12),
-    enabled: validId,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: catchphraseData, isLoading: catchphraseLoading } = useQuery({
-    queryKey: ["catchphrase", movieId],
-    queryFn: () => getCatchphrase(movieId),
-    enabled: !!movie,
-    staleTime: Infinity,
-    retry: false,
-  });
-  const catchphrase = catchphraseData?.catchphrase ?? movie?.tagline ?? null;
-
   useEffect(() => {
-    if (movie && isAuthenticated) {
-      fetchInteraction(movieId);
-    }
-  }, [movie, movieId, isAuthenticated, fetchInteraction]);
+    const fetchData = async () => {
+      if (!movieId || isNaN(movieId)) {
+        setError("Invalid movie ID");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setCatchphrase(null);
+      try {
+        const [movieData, similarData] = await Promise.all([
+          getMovie(movieId),
+          getSimilarMovies(movieId, 12),
+        ]);
+        setMovie(movieData);
+        setSimilar(similarData);
+
+        setCatchphraseLoading(true);
+        getCatchphrase(movieId)
+          .then((res) => setCatchphrase(res.catchphrase))
+          .catch(() => setCatchphrase(movieData.tagline || null))
+          .finally(() => setCatchphraseLoading(false));
+
+        if (isAuthenticated) {
+          await fetchInteraction(movieId);
+        }
+      } catch (err) {
+        console.error("Failed to fetch movie:", err);
+        setError("영화 정보를 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [movieId, isAuthenticated, fetchInteraction]);
 
   const handleFavoriteClick = async () => {
     if (!isAuthenticated) {
@@ -95,15 +108,15 @@ export default function MovieDetailPage() {
   const userRating = interaction?.rating ?? 0;
   const displayRating = ratingHover || userRating;
 
-  if (isLoading) {
+  if (loading) {
     return <MovieDetailSkeleton />;
   }
 
-  if (isError || !movie) {
+  if (error || !movie) {
     return (
       <div className="min-h-screen bg-surface-base pt-20 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 text-lg mb-4">영화를 찾을 수 없습니다.</p>
+          <p className="text-red-500 text-lg mb-4">{error || "영화를 찾을 수 없습니다."}</p>
           <button
             onClick={() => router.back()}
             className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition"
