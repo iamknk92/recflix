@@ -148,10 +148,9 @@ export default function MovieDetailPage() {
           ) : (
             <div className="w-full h-full bg-surface-raised" />
           )}
-          {/* Gradient Overlay — 강하게 수정 */}
-          <div className="absolute inset-0 bg-black/50" />
-          <div className="absolute inset-0 bg-gradient-to-t from-surface-base via-surface-base/90 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-surface-base/95 via-surface-base/70 to-surface-base/40" />
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-surface-base via-surface-base/70 to-surface-base/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-surface-base/90 via-transparent to-transparent" />
         </div>
 
         {/* Back Button */}
@@ -220,13 +219,13 @@ export default function MovieDetailPage() {
               className="flex-1 min-w-0"
             >
               {/* Title — 텍스트 그림자 추가 */}
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-1 md:mb-2 line-clamp-2 drop-shadow-lg">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-1 md:mb-2 line-clamp-2">
                 {displayTitle}
               </h1>
 
               {/* Original Title */}
               {movie.title_ko && movie.title !== movie.title_ko && (
-                <p className="text-white/60 text-sm md:text-lg mb-2 md:mb-4 truncate drop-shadow-md">{movie.title}</p>
+                <p className="text-gray-600 text-sm md:text-lg mb-2 md:mb-4 truncate">{movie.title}</p>
               )}
 
               {/* Catchphrase */}
@@ -234,19 +233,19 @@ export default function MovieDetailPage() {
                 {catchphraseLoading ? (
                   <div className="h-6 sm:h-7 w-48 sm:w-64 bg-white/20 animate-pulse rounded" />
                 ) : (catchphrase || movie.tagline) && (
-                  <p className="text-white/80 italic text-sm sm:text-base md:text-lg line-clamp-2 drop-shadow-md">
+                  <p className="text-gray-700 italic text-sm sm:text-base md:text-lg line-clamp-2">
                     &quot;{catchphrase || movie.tagline}&quot;
                   </p>
                 )}
               </div>
 
               {/* Meta Info */}
-              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs sm:text-sm md:text-base text-white/70 mb-4 md:mb-6 drop-shadow-sm">
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs sm:text-sm md:text-base text-gray-600 mb-4 md:mb-6">
                 {/* Rating */}
                 <div className="flex items-center space-x-1 text-yellow-400">
                   <Star className="w-4 h-4 md:w-5 md:h-5 fill-current" />
                   <span className="font-semibold">{movie.vote_average.toFixed(1)}</span>
-                  <span className="text-white/50 hidden sm:inline">({movie.vote_count.toLocaleString()})</span>
+                  <span className="text-gray-500 hidden sm:inline">({movie.vote_count.toLocaleString()})</span>
                 </div>
 
                 {/* Release Date */}
@@ -267,7 +266,7 @@ export default function MovieDetailPage() {
 
                 {/* Certification */}
                 {movie.certification && (
-                  <span className="px-1.5 md:px-2 py-0.5 border border-white/30 rounded text-xs">
+                  <span className="px-1.5 md:px-2 py-0.5 border border-gray-400 rounded text-xs text-gray-600">
                     {movie.certification}
                   </span>
                 )}
@@ -281,7 +280,7 @@ export default function MovieDetailPage() {
                     <Link
                       key={genreName || index}
                       href={`/movies?genre=${encodeURIComponent(genreName)}`}
-                      className="px-2 md:px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-xs md:text-sm text-white transition"
+                      className="px-2 md:px-3 py-1 bg-black/10 hover:bg-black/20 rounded-full text-xs md:text-sm text-gray-800 transition"
                     >
                       {genreName}
                     </Link>
@@ -301,7 +300,7 @@ export default function MovieDetailPage() {
                   className={`flex items-center space-x-1.5 md:space-x-2 px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-medium transition text-sm md:text-base ${
                     isFavorited
                       ? "bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white"
-                      : "bg-white/20 hover:bg-white/30 active:bg-white/40 text-white"
+                      : "bg-black/10 hover:bg-black/20 active:bg-black/30 text-gray-800"
                   }`}
                 >
                   <Heart className={`w-4 h-4 md:w-5 md:h-5 ${isFavorited ? "fill-current" : ""}`} />
