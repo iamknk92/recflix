@@ -60,17 +60,27 @@ const nextConfig = {
         pathname: "/t/p/**",
       },
     ],
-    // Optimize images for production
-    minimumCacheTTL: 60 * 60 * 24, // 24 hours
+    minimumCacheTTL: 60 * 60 * 24,
+    deviceSizes: [640, 750, 1080],      // ✅ images 안으로
+    imageSizes: [160, 200, 342],        // ✅ images 안으로
+    formats: ["image/avif", "image/webp"], // ✅ images 안으로
   },
 
-  // Compress responses
   compress: true,
 
   // Production optimizations
   poweredByHeader: false,
 
-  // Environment variables validation
+  experimental: {
+    optimizePackageImports: ["lucide-react", "framer-motion"],
+  },
+
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production"
+     ? { exclude: ["error"] }
+     : false,
+  },
+
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   },
@@ -81,26 +91,18 @@ const nextConfig = {
       {
         source: "/:path*",
         headers: [
-          {
-            key: "X-DNS-Prefetch-Control",
-            value: "on",
+          { key: "X-DNS-Prefetch-Control", value: "on" },
+          { 
+            key: "Link", 
+            value: "<https://image.tmdb.org>; rel=preconnect; crossorigin" 
           },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-XSS-Protection", value: "1; mode=block" },
         ],
       },
     ];
-  },
+  },  
 };
 
 const sentryWebpackPluginOptions = {
