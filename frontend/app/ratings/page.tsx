@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,6 +12,7 @@ import { getImageUrl } from "@/lib/utils";
 import type { RatingWithMovie, Movie } from "@/types";
 import MovieCard from "@/components/movie/MovieCard";
 import { MovieGridSkeleton } from "@/components/ui/Skeleton";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 // Weather context labels
 const WEATHER_LABELS: Record<string, string> = {
@@ -152,7 +152,6 @@ function RatingCard({
 const PAGE_SIZE = 20;
 
 export default function RatingsPage() {
-  const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
   const queryClient = useQueryClient();
 
@@ -201,6 +200,12 @@ export default function RatingsPage() {
   });
 
   const deletingId = deleteMutation.isPending ? deleteMutation.variables : null;
+
+  const { loadMoreRef } = useInfiniteScroll({
+    onLoadMore: fetchNextPage,
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
+  });
 
   const handleDelete = (movieId: number) => {
     if (!confirm("이 평점을 삭제하시겠습니까?")) return;
@@ -344,27 +349,13 @@ export default function RatingsPage() {
                 </AnimatePresence>
               </div>
 
-              {/* Load More */}
-              {hasNextPage && (
-                <div className="flex justify-center mt-8">
-                  <button
-                    onClick={() => fetchNextPage()}
-                    disabled={isFetchingNextPage}
-                    className="btn-secondary disabled:opacity-50 flex items-center space-x-2"
-                  >
-                    {isFetchingNextPage ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>불러오는 중...</span>
-                      </>
-                    ) : (
-                      <span>더 보기</span>
-                    )}
-                  </button>
+              {/* Infinite scroll trigger */}
+              <div ref={loadMoreRef} className="h-4" />
+              {isFetchingNextPage && (
+                <div className="flex justify-center py-6">
+                  <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
-
-              {/* End of list */}
               {!hasNextPage && ratings.length >= PAGE_SIZE && (
                 <p className="text-center text-content-subtle py-8">
                   모든 평점을 불러왔습니다

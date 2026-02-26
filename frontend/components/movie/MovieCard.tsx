@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Star, Eye } from "lucide-react";
-import { getImageUrl, formatDate } from "@/lib/utils";
+import { getImageUrl, formatDate, POSTER_BLUR_URL } from "@/lib/utils";
 import type { Movie } from "@/types";
 import MovieModal from "./MovieModal";
 
@@ -45,6 +45,8 @@ export default function MovieCard({ movie, index = 0, showQuickView = true }: Mo
                 loading="lazy"
                 decoding="async"
                 sizes="(max-width: 640px) 140px, (max-width: 1024px) 160px, 180px"
+                placeholder="blur"
+                blurDataURL={POSTER_BLUR_URL}
                 onError={() => setImageError(true)}
               />
             ) : (

@@ -17,7 +17,7 @@ import {
   Globe,
 } from "lucide-react";
 import { getMovie, getSimilarMovies, getCatchphrase } from "@/lib/api";
-import { getImageUrl, formatRuntime, formatDate } from "@/lib/utils";
+import { getImageUrl, formatRuntime, formatDate, POSTER_BLUR_URL } from "@/lib/utils";
 import { useInteractionStore } from "@/stores/interactionStore";
 import { useAuthStore } from "@/stores/authStore";
 import MovieCard from "@/components/movie/MovieCard";
@@ -180,6 +180,8 @@ export default function MovieDetailPage() {
                     alt={displayTitle}
                     fill
                     className="object-cover"
+                    placeholder="blur"
+                    blurDataURL={POSTER_BLUR_URL}
                   />
                 ) : (
                   <div className="w-full h-full bg-surface-raised flex items-center justify-center">
@@ -202,6 +204,8 @@ export default function MovieDetailPage() {
                     alt={displayTitle}
                     fill
                     className="object-cover"
+                    placeholder="blur"
+                    blurDataURL={POSTER_BLUR_URL}
                   />
                 ) : (
                   <div className="w-full h-full bg-surface-raised flex items-center justify-center">
@@ -385,7 +389,7 @@ export default function MovieDetailPage() {
                   {movie.cast_members.slice(0, 8).map((person) => (
                     <Link
                       key={person.id}
-                      href={`/movies?query=${encodeURIComponent(person.name)}`}
+                      href={`/search?q=${encodeURIComponent(person.name)}`}
                       className="flex items-center space-x-3 p-3 bg-surface-raised hover:bg-surface-elevated rounded-lg transition border border-border"
                     >
                       <div className="w-10 h-10 bg-surface-elevated rounded-full flex items-center justify-center flex-shrink-0">

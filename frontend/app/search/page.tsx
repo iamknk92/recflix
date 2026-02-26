@@ -6,6 +6,7 @@ import { Search, Film, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getMovies, searchAutocomplete } from "@/lib/api";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import type { Movie } from "@/types";
 import MovieCard from "@/components/movie/MovieCard";
 import { MovieGridSkeleton } from "@/components/ui/Skeleton";
@@ -44,6 +45,13 @@ function SearchPageContent() {
   const movies = (moviesData?.pages.flatMap((p) => p.items) ?? []) as Movie[];
   const totalCount = moviesData?.pages[0]?.total ?? 0;
   const people = autocomplete?.people ?? [];
+
+  const { loadMoreRef } = useInfiniteScroll({
+    onLoadMore: fetchNextPage,
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
+    enabled: !!q,
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,15 +92,17 @@ function SearchPageContent() {
                   <User className="w-5 h-5" />
                   배우/감독
                 </h2>
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                   {people.map((person) => (
                     <Link
                       key={person.id}
-                      href={`/movies?query=${encodeURIComponent(person.name)}`}
-                      className="flex items-center gap-2 px-4 py-2 bg-surface-card border border-border rounded-full hover:border-primary-500 hover:bg-primary-500/5 transition"
+                      href={`/search?q=${encodeURIComponent(person.name)}`}
+                      className="flex items-center gap-3 p-3 bg-surface-card border border-border rounded-xl hover:border-primary-500 hover:bg-primary-500/5 transition group"
                     >
-                      <User className="w-4 h-4 text-content-muted" />
-                      <span className="text-content-primary text-sm">{person.name}</span>
+                      <div className="w-10 h-10 rounded-full bg-surface-raised flex items-center justify-center flex-shrink-0 group-hover:bg-primary-500/10 transition">
+                        <User className="w-5 h-5 text-content-muted group-hover:text-primary-500 transition" />
+                      </div>
+                      <span className="text-content-primary text-sm font-medium truncate">{person.name}</span>
                     </Link>
                   ))}
                 </div>
@@ -135,22 +145,11 @@ function SearchPageContent() {
                     ))}
                   </motion.div>
 
-                  {hasNextPage && (
-                    <div className="flex justify-center mt-8">
-                      <button
-                        onClick={() => fetchNextPage()}
-                        disabled={isFetchingNextPage}
-                        className="btn-secondary disabled:opacity-50 flex items-center gap-2"
-                      >
-                        {isFetchingNextPage ? (
-                          <>
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            <span>불러오는 중...</span>
-                          </>
-                        ) : (
-                          <span>더 보기</span>
-                        )}
-                      </button>
+                  {/* Infinite scroll trigger */}
+                  <div ref={loadMoreRef} className="h-4" />
+                  {isFetchingNextPage && (
+                    <div className="flex justify-center py-6">
+                      <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
                 </>

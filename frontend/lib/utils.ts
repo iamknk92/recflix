@@ -1,3 +1,7 @@
+// 포스터(2:3) 로딩 전 blur placeholder — 아이보리 테마 배경색
+const _posterSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="2" height="3"><rect width="2" height="3" fill="#EDE8E1"/></svg>`;
+export const POSTER_BLUR_URL = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(_posterSvg)}`;
+
 export function getImageUrl(path: string | null | undefined, size: string = "w500"): string {
   if (!path) return "/placeholder.png"
   if (path.startsWith("http")) return path

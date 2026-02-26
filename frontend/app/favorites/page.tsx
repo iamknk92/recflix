@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Film, Trash2, LogIn } from "lucide-react";
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,12 +8,12 @@ import { useAuthStore } from "@/stores/authStore";
 import type { Movie } from "@/types";
 import MovieCard from "@/components/movie/MovieCard";
 import { MovieGridSkeleton } from "@/components/ui/Skeleton";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import Link from "next/link";
 
 const PAGE_SIZE = 20;
 
 export default function FavoritesPage() {
-  const router = useRouter();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
   const queryClient = useQueryClient();
 
@@ -58,6 +56,12 @@ export default function FavoritesPage() {
   });
 
   const removingId = removeMutation.isPending ? removeMutation.variables : null;
+
+  const { loadMoreRef } = useInfiniteScroll({
+    onLoadMore: fetchNextPage,
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
+  });
 
   const handleRemoveFavorite = (movieId: number, e: React.MouseEvent) => {
     e.preventDefault();
@@ -199,27 +203,13 @@ export default function FavoritesPage() {
                 </AnimatePresence>
               </div>
 
-              {/* Load More */}
-              {hasNextPage && (
-                <div className="flex justify-center mt-8">
-                  <button
-                    onClick={() => fetchNextPage()}
-                    disabled={isFetchingNextPage}
-                    className="btn-secondary disabled:opacity-50 flex items-center space-x-2"
-                  >
-                    {isFetchingNextPage ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>불러오는 중...</span>
-                      </>
-                    ) : (
-                      <span>더 보기</span>
-                    )}
-                  </button>
+              {/* Infinite scroll trigger */}
+              <div ref={loadMoreRef} className="h-4" />
+              {isFetchingNextPage && (
+                <div className="flex justify-center py-6">
+                  <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
-
-              {/* End of list */}
               {!hasNextPage && favorites.length >= PAGE_SIZE && (
                 <p className="text-center text-content-subtle py-8">
                   모든 찜한 영화를 불러왔습니다
