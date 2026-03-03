@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -120,25 +121,21 @@ export default function MatchPage() {
 
   const [myMbti, setMyMbti] = useState<string>(user?.mbti || "INFP");
   const [friendMbti, setFriendMbti] = useState<string>("ENFJ");
-  const [result, setResult] = useState<MatchResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = async () => {
-    if (!MBTI_TYPES.includes(myMbti) || !MBTI_TYPES.includes(friendMbti)) {
-      setError("유효하지 않은 MBTI입니다.");
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getMatchRecommendations(myMbti, friendMbti, 10);
-      setResult(data);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
-    }
+  useEffect(() => {
+    if (user?.mbti) setMyMbti(user.mbti);
+  }, [user?.mbti]);
+
+  const { mutate, isPending, error, data: result } = useMutation<
+    MatchResponse,
+    Error,
+    { mbti1: string; mbti2: string }
+  >({
+    mutationFn: ({ mbti1, mbti2 }) => getMatchRecommendations(mbti1, mbti2, 10),
+  });
+
+  const handleSearch = () => {
+    mutate({ mbti1: myMbti, mbti2: friendMbti });
   };
 
   const scoreColor =
@@ -173,7 +170,7 @@ export default function MatchPage() {
           transition={{ delay: 0.1 }}
           className="card p-6 mb-6"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-8">
             {/* My MBTI */}
             <div>
               <MbtiToggle
@@ -205,20 +202,20 @@ export default function MatchPage() {
           <div className="mt-6 flex justify-center">
             <button
               onClick={handleSearch}
-              disabled={loading}
+              disabled={isPending}
               className="btn-primary flex items-center gap-2 px-8 py-3"
             >
-              {loading ? (
+              {isPending ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <Search className="w-5 h-5" />
               )}
-              <span>{loading ? "분석 중..." : "궁합 영화 찾기"}</span>
+              <span>{isPending ? "분석 중..." : "궁합 영화 찾기"}</span>
             </button>
           </div>
 
           {error && (
-            <p className="text-primary-600 text-sm text-center mt-3">{error}</p>
+            <p className="text-primary-600 text-sm text-center mt-3">{error.message}</p>
           )}
         </motion.div>
 

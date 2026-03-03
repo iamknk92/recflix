@@ -4,6 +4,8 @@ import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Film, RefreshCw } from "lucide-react";
+// [수정] useQuery, useInfiniteQuery 임포트 추가
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { getMovies, getGenres, getPopularMovies } from "@/lib/api";
 import type { Movie, Genre } from "@/types";
 import MovieCard from "@/components/movie/MovieCard";
@@ -22,24 +24,20 @@ function MoviesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [genres, setGenres] = useState<Genre[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [totalPages, setTotalPages] = useState(1);
-  const [recommendedMovies, setRecommendedMovies] = useState<Movie[]>([]);
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
-
   // URL params
   const query = searchParams.get("query") || "";
   const selectedGenre = searchParams.get("genre") || "";
   const sortBy = searchParams.get("sort") || "popularity";
+
+  // [유지] 페이지네이션 모드용 currentPage, 무한 스크롤 토글, 모달 state
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Infinite scroll mode
   const [useInfiniteMode, setUseInfiniteMode] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const hasMore = currentPage < totalPages;
+  // [추가] 필터(query/genre/sort) 변경 시 currentPage 1로 초기화
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, selectedGenre, sortBy]);
 
   const updateParams = useCallback(
     (updates: Record<string, string | number | null>) => {
@@ -58,78 +56,78 @@ function MoviesPageContent() {
     [searchParams, router]
   );
 
-  // Fetch genres
-  useEffect(() => {
-    const fetchGenres = async () => {
-      try {
-        const data = await getGenres();
-        setGenres(data);
-      } catch (error) {
-        console.error("Failed to fetch genres:", error);
-      }
-    };
-    fetchGenres();
-  }, []);
+  // [수정] 2. 장르 목록 → useQuery (staleTime: Infinity — 장르는 거의 안 바뀜)
+  const { data: genres = [] } = useQuery<Genre[]>({
+    queryKey: ["genres"],
+    queryFn: getGenres,
+    staleTime: Infinity,
+  });
 
-  // Fetch movies
-  useEffect(() => {
-    const fetchMovies = async () => {
-      setLoading(true);
-      setCurrentPage(1);
-      try {
-        const data = await getMovies({
-          query: query || undefined,
-          genres: selectedGenre || undefined,
-          page: 1,
-          page_size: 24,
-          sort_by: sortBy,
-        });
-        setMovies(data.items);
-        setTotalPages(data.total_pages);
-
-        // Fetch recommendations if no results
-        if (data.items.length === 0 && query) {
-          const popular = await getPopularMovies(12);
-          setRecommendedMovies(popular);
-        } else {
-          setRecommendedMovies([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch movies:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMovies();
-  }, [query, selectedGenre, sortBy]);
-
-  // Load more function for infinite scroll
-  const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore) return;
-
-    setLoadingMore(true);
-    try {
-      const nextPage = currentPage + 1;
-      const data = await getMovies({
+  // [수정] 1. 영화 목록 → useQuery (페이지네이션 모드)
+  // currentPage가 queryKey에 포함되어 있어 변경 시 자동 재요청
+  // [수정] isError, refetch 추출 — 에러 UI 및 재시도 버튼에 사용
+  const { data: movieData, isLoading: queryIsLoading, isError: queryIsError, refetch } = useQuery({
+    queryKey: ["movies", query, selectedGenre, sortBy, currentPage],
+    queryFn: () =>
+      getMovies({
         query: query || undefined,
         genres: selectedGenre || undefined,
-        page: nextPage,
+        page: currentPage,
         page_size: 24,
         sort_by: sortBy,
-      });
-      setMovies((prev) => [...prev, ...data.items]);
-      setCurrentPage(nextPage);
-    } catch (error) {
-      console.error("Failed to load more movies:", error);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [currentPage, hasMore, loadingMore, query, selectedGenre, sortBy]);
+      }),
+    enabled: !useInfiniteMode,
+  });
 
+  // [수정] 4. 무한 스크롤 → useInfiniteQuery
+  const {
+    data: infiniteData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: infiniteIsLoading,
+  } = useInfiniteQuery({
+    queryKey: ["movies-infinite", query, selectedGenre, sortBy],
+    queryFn: ({ pageParam = 1 }) =>
+      getMovies({
+        query: query || undefined,
+        genres: selectedGenre || undefined,
+        page: pageParam as number,
+        page_size: 24,
+        sort_by: sortBy,
+      }),
+    getNextPageParam: (lastPage, allPages) =>
+      allPages.length < lastPage.total_pages ? allPages.length + 1 : undefined,
+    initialPageParam: 1,
+    enabled: useInfiniteMode,
+  });
+
+  // [추가] 에러 상태 — 페이지네이션 모드일 때만 판단 (무한 스크롤은 별도 처리)
+  const isError = !useInfiniteMode && queryIsError;
+
+  // [수정] 파생 데이터 — 모드에 따라 소스 선택
+  const movies = useInfiniteMode
+    ? (infiniteData?.pages.flatMap((p) => p.items) ?? [])
+    : (movieData?.items ?? []);
+  const totalPages = useInfiniteMode
+    ? (infiniteData?.pages[0]?.total_pages ?? 1)
+    : (movieData?.total_pages ?? 1);
+  // [수정] 6. loading/loadingMore → isLoading, isFetchingNextPage
+  const isLoading = useInfiniteMode ? infiniteIsLoading : queryIsLoading;
+
+  // [수정] 3. 추천 영화 → useQuery (검색 결과 없을 때만 활성화)
+  const { data: recommendedMovies = [] } = useQuery<Movie[]>({
+    queryKey: ["popularMovies"],
+    queryFn: () => getPopularMovies(12),
+    enabled: movies.length === 0 && !!query && !isLoading,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // [수정] 무한 스크롤: loadMore 대신 fetchNextPage 직접 사용
   const { loadMoreRef } = useInfiniteScroll({
-    onLoadMore: loadMore,
-    hasMore,
-    isLoading: loadingMore,
+    onLoadMore: fetchNextPage,
+    hasMore: hasNextPage ?? false,
+    isLoading: isFetchingNextPage,
     enabled: useInfiniteMode,
   });
 
@@ -225,7 +223,28 @@ function MoviesPageContent() {
 
         {/* Results */}
         <AnimatePresence mode="wait">
-          {loading ? (
+          {/* [추가] 에러 상태 UI */}
+          {isError ? (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-16"
+            >
+              <p className="text-4xl mb-4">⚠️</p>
+              <h3 className="text-xl font-semibold text-content-primary mb-2">
+                영화 목록을 불러오지 못했어요
+              </h3>
+              <p className="text-content-muted mb-6">네트워크 상태를 확인하고 다시 시도해주세요.</p>
+              <button
+                onClick={() => refetch()}
+                className="btn-primary px-6 py-2.5"
+              >
+                다시 시도
+              </button>
+            </motion.div>
+          ) : isLoading ? (
             <motion.div
               key="skeleton"
               initial={{ opacity: 0 }}
@@ -284,18 +303,18 @@ function MoviesPageContent() {
               {/* Infinite scroll mode */}
               {useInfiniteMode ? (
                 <>
-                  {/* Loading more indicator */}
-                  {loadingMore && (
+                  {/* [수정] loadingMore → isFetchingNextPage */}
+                  {isFetchingNextPage && (
                     <div className="flex justify-center items-center py-8">
                       <div className="w-8 h-8 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
 
-                  {/* Intersection observer target - always mounted for proper observation */}
+                  {/* Intersection observer target */}
                   <div ref={loadMoreRef} className="h-10" />
 
                   {/* End of results */}
-                  {!hasMore && movies.length > 0 && (
+                  {!hasNextPage && movies.length > 0 && (
                     <p className="text-center text-content-subtle py-8">
                       모든 영화를 불러왔습니다
                     </p>
@@ -305,23 +324,9 @@ function MoviesPageContent() {
                 /* Pagination */
                 totalPages > 1 && (
                   <div className="flex justify-center items-center space-x-2 mt-12">
+                    {/* [수정] fetchPage 중복 함수 제거 — setCurrentPage만으로 useQuery 자동 재요청 */}
                     <button
-                      onClick={() => {
-                        setCurrentPage(Math.max(1, currentPage - 1));
-                        const fetchPage = async () => {
-                          setLoading(true);
-                          const data = await getMovies({
-                            query: query || undefined,
-                            genres: selectedGenre || undefined,
-                            page: Math.max(1, currentPage - 1),
-                            page_size: 24,
-                            sort_by: sortBy,
-                          });
-                          setMovies(data.items);
-                          setLoading(false);
-                        };
-                        fetchPage();
-                      }}
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
                       className="px-4 py-2 bg-surface-raised hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed text-content-primary rounded-lg transition"
                     >
@@ -343,22 +348,8 @@ function MoviesPageContent() {
                         return (
                           <button
                             key={pageNum}
-                            onClick={() => {
-                              setCurrentPage(pageNum);
-                              const fetchPage = async () => {
-                                setLoading(true);
-                                const data = await getMovies({
-                                  query: query || undefined,
-                                  genres: selectedGenre || undefined,
-                                  page: pageNum,
-                                  page_size: 24,
-                                  sort_by: sortBy,
-                                });
-                                setMovies(data.items);
-                                setLoading(false);
-                              };
-                              fetchPage();
-                            }}
+                            // [수정] fetchPage 중복 함수 제거 — setCurrentPage만으로 useQuery 자동 재요청
+                            onClick={() => setCurrentPage(pageNum)}
                             className={`w-10 h-10 rounded-lg transition ${
                               currentPage === pageNum
                                 ? "bg-primary-600 text-white"
@@ -371,23 +362,9 @@ function MoviesPageContent() {
                       })}
                     </div>
 
+                    {/* [수정] fetchPage 중복 함수 제거 */}
                     <button
-                      onClick={() => {
-                        setCurrentPage(Math.min(totalPages, currentPage + 1));
-                        const fetchPage = async () => {
-                          setLoading(true);
-                          const data = await getMovies({
-                            query: query || undefined,
-                            genres: selectedGenre || undefined,
-                            page: Math.min(totalPages, currentPage + 1),
-                            page_size: 24,
-                            sort_by: sortBy,
-                          });
-                          setMovies(data.items);
-                          setLoading(false);
-                        };
-                        fetchPage();
-                      }}
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
                       className="px-4 py-2 bg-surface-raised hover:bg-surface-elevated disabled:opacity-50 disabled:cursor-not-allowed text-content-primary rounded-lg transition"
                     >

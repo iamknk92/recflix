@@ -1,36 +1,45 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { fetchRatingStats } from "@/lib/api"
-import { RatingStats } from "@/types"
+// [수정] getAiPickRecommendations 임포트 추가
+import { fetchRatingStats, getAiPickRecommendations } from "@/lib/api"
+import { RatingStats, Movie } from "@/types"
 import { useAuthStore } from "@/stores/authStore"
 import StatsSummaryCards from "@/components/stats/StatsSummaryCards"
 import GenreDonutChart from "@/components/stats/GenreDonutChart"
 import ScoreBarChart from "@/components/stats/ScoreBarChart"
 import WeatherRadarChart from "@/components/stats/WeatherRadarChart"
 import TopCreatorsSection from "@/components/stats/TopCreatorsSection"
+import MovieCard from "@/components/movie/MovieCard"
 
 const MIN_RATINGS_FOR_ANALYSIS = 5
 
 export default function MyTastePage() {
   const { user, isAuthenticated } = useAuthStore()
   const router = useRouter()
-  const [stats, setStats] = useState<RatingStats | null>(null)
-  const [loading, setLoading] = useState(true)
+  // [수정] isError 추출 — 네트워크 에러와 "평점 0개" 상태 구분
+  const { data: stats, isLoading, isError: statsError, refetch: refetchStats } = useQuery<RatingStats>({
+    // [수정] user?.id 추가 — 다른 계정 로그인 시 이전 유저 캐시 노출 방지
+    queryKey: ["rating-stats", user?.id],
+    queryFn: fetchRatingStats,
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+  })
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setLoading(false)
-      return
-    }
-    fetchRatingStats()
-      .then(setStats)
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [isAuthenticated])
+  // [추가] totalRated — aiPick enabled 조건에 사용
+  const totalRated = stats?.total_rated ?? 0
 
-  if (loading) {
+  // [추가] AI 취향 추천 → useQuery (로그인 + 평점 5개 이상일 때만 호출)
+  const aiPickQuery = useQuery<Movie[]>({
+    // [수정] user?.id 추가 — 다른 계정 로그인 시 이전 유저 캐시 노출 방지
+    queryKey: ["aiPick", user?.id],
+    queryFn: getAiPickRecommendations,
+    enabled: isAuthenticated && totalRated >= MIN_RATINGS_FOR_ANALYSIS,
+    staleTime: 10 * 60 * 1000, // AI 호출 비용 절감
+  })
+
+  if (isLoading) {
     return (
       <div className="page-container-narrow">
         <div className="max-w-5xl mx-auto">
@@ -44,7 +53,36 @@ export default function MyTastePage() {
             <div className="h-80 bg-surface-card rounded-xl animate-pulse" />
             <div className="h-80 bg-surface-card rounded-xl animate-pulse" />
           </div>
+          <div className="h-96 bg-surface-card rounded-xl animate-pulse mb-4" />
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="h-52 bg-surface-card rounded-xl animate-pulse flex-1" />
+            <div className="h-52 bg-surface-card rounded-xl animate-pulse flex-1" />
+          </div>
         </div>
+      </div>
+    )
+  }
+
+  // [추가] stats 로드 에러 처리
+  if (statsError) {
+    return (
+      <div className="page-container-narrow flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="text-center"
+        >
+          <p className="text-6xl mb-4">⚠️</p>
+          <p className="text-content-primary text-2xl font-bold mb-2">데이터를 불러오지 못했어요</p>
+          <p className="text-content-muted mb-8">네트워크 상태를 확인하고 다시 시도해주세요.</p>
+          <button
+            onClick={() => refetchStats()}
+            className="btn-primary px-8 py-3"
+          >
+            다시 시도
+          </button>
+        </motion.div>
       </div>
     )
   }
@@ -74,7 +112,6 @@ export default function MyTastePage() {
   }
 
   // 로그인했지만 평점 부족
-  const totalRated = stats?.total_rated ?? 0
   if (totalRated < MIN_RATINGS_FOR_ANALYSIS) {
     const remaining = MIN_RATINGS_FOR_ANALYSIS - totalRated
     return (
@@ -133,6 +170,32 @@ export default function MyTastePage() {
           <WeatherRadarChart data={stats!.weather_genre_map} />
         </div>
         <TopCreatorsSection directors={stats!.top_directors} actors={stats!.top_actors} />
+
+        {/* [추가] AI 취향 추천 섹션 — 로그인 + 평점 5개 이상일 때만 렌더링 */}
+        {(aiPickQuery.isLoading || (aiPickQuery.data && aiPickQuery.data.length > 0)) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mt-8"
+          >
+            <h2 className="text-xl font-bold text-content-primary mb-4">✨ AI가 고른 취향 저격 영화</h2>
+            {aiPickQuery.isLoading ? (
+              // 로딩 중 스켈레톤 5개
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="aspect-[2/3] bg-surface-card rounded-xl animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                {aiPickQuery.data!.map((movie, i) => (
+                  <MovieCard key={movie.id} movie={movie} index={i} />
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
       </div>
     </motion.div>
   )

@@ -16,69 +16,77 @@ import {
   Tag,
   Globe,
 } from "lucide-react";
-import { getMovie, getSimilarMovies, getCatchphrase } from "@/lib/api";
+// [수정] useQuery 임포트 추가
+import { useQuery } from "@tanstack/react-query";
+// [수정] getSimilarMovies 제거 — "비슷한 영화" 섹션 삭제로 불필요
+import { getMovie, getCatchphrase, getAiSimilarMovies } from "@/lib/api";
 import { getImageUrl, formatRuntime, formatDate, POSTER_BLUR_URL } from "@/lib/utils";
 import { useInteractionStore } from "@/stores/interactionStore";
 import { useAuthStore } from "@/stores/authStore";
 import MovieCard from "@/components/movie/MovieCard";
 import { Skeleton } from "@/components/ui/Skeleton";
-import type { MovieDetail, Movie } from "@/types";
+import type { MovieDetail, Movie, Genre } from "@/types";
+
+// [추가] genre 타입 가드 — Movie.genres가 string[] 이지만 런타임에 Genre 객체가 올 수 있음
+type GenreItem = string | Genre;
+function getGenreName(genre: GenreItem): string {
+  if (typeof genre === "string") return genre;
+  return genre.name_ko || genre.name;
+}
 
 export default function MovieDetailPage() {
   const params = useParams();
   const router = useRouter();
   const movieId = Number(params.id);
 
-  const [movie, setMovie] = useState<MovieDetail | null>(null);
-  const [similar, setSimilar] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // [유지] 별점 hover state (UI 전용)
   const [ratingHover, setRatingHover] = useState(0);
-  const [catchphrase, setCatchphrase] = useState<string | null>(null);
-  const [catchphraseLoading, setCatchphraseLoading] = useState(false);
 
   const { isAuthenticated } = useAuthStore();
   const { interactions, fetchInteraction, toggleFavorite, setRating } =
     useInteractionStore();
   const interaction = interactions[movieId];
 
+  // [추가] isValidId — 중복 표현 추출 (3개 useQuery에서 공통으로 사용)
+  const isValidId = !!movieId && !isNaN(movieId);
+
+  // [수정] 1. 영화 상세 → useQuery
+  const { data: movie, isLoading, isError } = useQuery<MovieDetail>({
+    queryKey: ["movie", movieId],
+    queryFn: () => getMovie(movieId),
+    enabled: isValidId,
+  });
+
+  // [수정] "비슷한 영화" useQuery 제거 — AI 유사 영화로 대체
+
+  // [유지] 3. AI 유사 영화 → useQuery (staleTime: 10분 — AI 호출 비용 절감)
+  const aiSimilarQuery = useQuery<Movie[]>({
+    queryKey: ["aiSimilarMovies", movieId],
+    queryFn: () => getAiSimilarMovies(movieId),
+    staleTime: 10 * 60 * 1000,
+    enabled: isValidId,
+  });
+  const aiSimilar = aiSimilarQuery.data ?? [];
+
+  // [수정] 4. 캐치프레이즈 → useQuery (실패 시 movie.tagline으로 폴백)
+  const catchphraseQuery = useQuery({
+    queryKey: ["catchphrase", movieId],
+    queryFn: () => getCatchphrase(movieId),
+    enabled: isValidId,
+    retry: false,
+  });
+  const catchphrase =
+    catchphraseQuery.data?.catchphrase ??
+    (catchphraseQuery.isError ? (movie?.tagline ?? null) : null);
+
+  // [수정] 5. fetchInteraction — fetchInteraction 의존성 제거 (무한 루프 방지)
+  // zustand store 함수는 참조가 매 렌더마다 바뀔 수 있으므로 deps에서 제외
   useEffect(() => {
-    const fetchData = async () => {
-      if (!movieId || isNaN(movieId)) {
-        setError("Invalid movie ID");
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setCatchphrase(null);
-      try {
-        const [movieData, similarData] = await Promise.all([
-          getMovie(movieId),
-          getSimilarMovies(movieId, 12),
-        ]);
-        setMovie(movieData);
-        setSimilar(similarData);
-
-        setCatchphraseLoading(true);
-        getCatchphrase(movieId)
-          .then((res) => setCatchphrase(res.catchphrase))
-          .catch(() => setCatchphrase(movieData.tagline || null))
-          .finally(() => setCatchphraseLoading(false));
-
-        if (isAuthenticated) {
-          await fetchInteraction(movieId);
-        }
-      } catch (err) {
-        console.error("Failed to fetch movie:", err);
-        setError("영화 정보를 불러오는데 실패했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [movieId, isAuthenticated, fetchInteraction]);
+    if (isAuthenticated && movieId && !isNaN(movieId)) {
+      fetchInteraction(movieId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [movieId, isAuthenticated]);
 
   const handleFavoriteClick = async () => {
     if (!isAuthenticated) {
@@ -108,15 +116,16 @@ export default function MovieDetailPage() {
   const userRating = interaction?.rating ?? 0;
   const displayRating = ratingHover || userRating;
 
-  if (loading) {
+  // [수정] 6. loading → isLoading
+  if (isLoading) {
     return <MovieDetailSkeleton />;
   }
 
-  if (error || !movie) {
+  if (isError || !movie) {
     return (
       <div className="min-h-screen bg-surface-base pt-20 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 text-lg mb-4">{error || "영화를 찾을 수 없습니다."}</p>
+          <p className="text-red-500 text-lg mb-4">영화 정보를 불러오는데 실패했습니다.</p>
           <button
             onClick={() => router.back()}
             className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition"
@@ -234,7 +243,8 @@ export default function MovieDetailPage() {
 
               {/* Catchphrase */}
               <div className="mb-3 sm:mb-4">
-                {catchphraseLoading ? (
+                {/* [수정] 6. catchphraseLoading → catchphraseQuery.isLoading */}
+                {catchphraseQuery.isLoading ? (
                   <div className="h-6 sm:h-7 w-48 sm:w-64 bg-white/20 animate-pulse rounded" />
                 ) : (catchphrase || movie.tagline) && (
                   <p className="text-gray-700 italic text-sm sm:text-base md:text-lg line-clamp-2">
@@ -279,7 +289,8 @@ export default function MovieDetailPage() {
               {/* Genres */}
               <div className="flex flex-wrap gap-1.5 md:gap-2 mb-4 md:mb-6">
                 {movie.genres.slice(0, 4).map((genre, index) => {
-                  const genreName = typeof genre === 'string' ? genre : (genre as any).name_ko || (genre as any).name;
+                  // [수정] any 캐스팅 → getGenreName 타입 가드 함수로 교체
+                  const genreName = getGenreName(genre as GenreItem);
                   return (
                     <Link
                       key={genreName || index}
@@ -402,19 +413,33 @@ export default function MovieDetailPage() {
               </motion.section>
             )}
 
-            {/* Similar Movies */}
-            {similar.length > 0 && (
+            {/* [수정] "비슷한 영화" 섹션 제거 — AI 유사 영화 섹션으로 대체 */}
+
+            {/* AI 유사 영화 섹션 */}
+            {/* [수정] 6. aiSimilarLoading → aiSimilarQuery.isLoading */}
+            {(aiSimilarQuery.isLoading || aiSimilar.length > 0) && (
               <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.6 }}
               >
-                <h2 className="text-xl font-semibold text-content-primary mb-4">비슷한 영화</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {similar.slice(0, 6).map((m, i) => (
-                    <MovieCard key={m.id} movie={m} index={i} />
-                  ))}
-                </div>
+                <h2 className="text-xl font-semibold text-content-primary mb-4">
+                  ✨ AI가 고른 비슷한 영화
+                </h2>
+                {aiSimilarQuery.isLoading ? (
+                  // AI 로딩 중 스켈레톤
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="aspect-[2/3] bg-surface-card rounded-xl animate-pulse" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {aiSimilar.map((m, i) => (
+                      <MovieCard key={m.id} movie={m} index={i} />
+                    ))}
+                  </div>
+                )}
               </motion.section>
             )}
           </div>

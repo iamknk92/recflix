@@ -25,7 +25,8 @@ export default function ProfilePage() {
       return;
     }
     fetchUser();
-  }, [isAuthenticated, router, fetchUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]); // fetchUser, router 제거 — zustand 함수 참조 변경으로 인한 무한 루프 방지
 
   useEffect(() => {
     if (user?.mbti) {
