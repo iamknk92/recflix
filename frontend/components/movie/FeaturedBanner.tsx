@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Cloud, Plus, Check, Sun, CloudRain, CloudSnow, RotateCcw } from "lucide-react";
-import { getImageUrl } from "@/lib/utils";
+import { getImageUrl, POSTER_BLUR_URL } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
 import { useInteractionStore } from "@/stores/interactionStore";
 import type { Movie, Weather, WeatherType, MoodType } from "@/types";
@@ -129,9 +129,11 @@ export default function FeaturedBanner({
             src={getImageUrl(movie.poster_path, "w1280")}
             alt={movie.title_ko || movie.title}
             fill
-            className="object-cover brightness-[0.6]"
             priority
             sizes="100vw"
+            placeholder="blur"
+            blurDataURL={POSTER_BLUR_URL}
+            className="object-cover brightness-[0.6]"
           />
           {/* 
             핵심 수정: dark-200(미정의) → 실제 색상 코드 사용

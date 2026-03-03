@@ -44,8 +44,9 @@ export default function MovieCard({ movie, index = 0, showQuickView = true }: Mo
                 className="object-cover"
                 // [추가] 첫 번째 이미지만 priority (LCP 최적화), 나머지는 자동 lazy
                 priority={index === 0}
-                // [수정] sizes — 모바일 50vw, 데스크톱 342px
-                sizes="(max-width: 768px) 50vw, 342px"
+                // sizes — 모바일 2열(50vw), 태블릿 3열(33vw), 데스크톱 최대 200px
+                // next.config imageSizes: [160, 200, 342] 기준으로 최적 사이즈 선택됨
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
                 placeholder="blur"
                 blurDataURL={POSTER_BLUR_URL}
                 onError={() => setImageError(true)}

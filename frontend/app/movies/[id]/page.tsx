@@ -151,8 +151,11 @@ export default function MovieDetailPage() {
               src={getImageUrl(movie.poster_path, "original")}
               alt={displayTitle}
               fill
-              className="object-cover object-top"
               priority
+              sizes="100vw"
+              placeholder="blur"
+              blurDataURL={POSTER_BLUR_URL}
+              className="object-cover object-top"
             />
           ) : (
             <div className="w-full h-full bg-surface-raised" />
