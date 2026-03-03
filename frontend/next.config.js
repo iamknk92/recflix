@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const { withSentryConfig } = require("@sentry/nextjs");
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+  openAnalyzer: true, // 분석 완료 후 브라우저 자동 오픈
+});
 const withPWA = require("next-pwa")({
   dest: "public",
   register: true,
@@ -118,4 +122,6 @@ const sentryWebpackPluginOptions = {
   release: process.env.SENTRY_AUTH_TOKEN ? undefined : "skip",
 };
 
-module.exports = withSentryConfig(withPWA(nextConfig), sentryWebpackPluginOptions);
+// withBundleAnalyzer → withPWA → withSentryConfig 순으로 래핑
+// ANALYZE=true 일 때만 번들 분석기 활성화, 일반 빌드에서는 zero-cost
+module.exports = withSentryConfig(withPWA(withBundleAnalyzer(nextConfig)), sentryWebpackPluginOptions);
