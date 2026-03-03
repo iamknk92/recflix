@@ -50,30 +50,34 @@ export default function MovieDetailPage() {
   // [추가] isValidId — 중복 표현 추출 (3개 useQuery에서 공통으로 사용)
   const isValidId = !!movieId && !isNaN(movieId);
 
-  // [수정] 1. 영화 상세 → useQuery
+  // [수정] 1. 영화 상세 → useQuery (staleTime 30분 — 영화 메타데이터는 자주 안 바뀜)
   const { data: movie, isLoading, isError } = useQuery<MovieDetail>({
     queryKey: ["movie", movieId],
     queryFn: () => getMovie(movieId),
     enabled: isValidId,
+    staleTime: 30 * 60 * 1000,
   });
 
   // [수정] "비슷한 영화" useQuery 제거 — AI 유사 영화로 대체
 
-  // [유지] 3. AI 유사 영화 → useQuery (staleTime: 10분 — AI 호출 비용 절감)
+  // AI 유사 영화 → staleTime 30분, gcTime 60분 (Claude API 호출 비용 최소화)
   const aiSimilarQuery = useQuery<Movie[]>({
     queryKey: ["aiSimilarMovies", movieId],
     queryFn: () => getAiSimilarMovies(movieId),
-    staleTime: 10 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
     enabled: isValidId,
   });
   const aiSimilar = aiSimilarQuery.data ?? [];
 
-  // [수정] 4. 캐치프레이즈 → useQuery (실패 시 movie.tagline으로 폴백)
+  // 캐치프레이즈 → AI 생성 고정값, 24시간 캐시 (영화당 1회 생성으로 비용 절감)
   const catchphraseQuery = useQuery({
     queryKey: ["catchphrase", movieId],
     queryFn: () => getCatchphrase(movieId),
     enabled: isValidId,
     retry: false,
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
   });
   const catchphrase =
     catchphraseQuery.data?.catchphrase ??

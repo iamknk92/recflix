@@ -22,7 +22,8 @@ export default function PersonPage() {
     queryKey: ["person", personId],
     queryFn: () => getPerson(personId),
     enabled: !!personId && !isNaN(personId),
-    staleTime: 10 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,  // 인물 데이터는 거의 불변
+    gcTime: 60 * 60 * 1000,
   });
 
   if (isLoading) {

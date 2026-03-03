@@ -38,7 +38,8 @@ export default function MyTastePage() {
     queryKey: ["rating-stats", user?.id],
     queryFn: fetchRatingStats,
     enabled: isAuthenticated,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 1 * 60 * 1000,  // 1분 — 평점 직후 빠른 반영
+    gcTime: 5 * 60 * 1000,
   })
 
   // [추가] totalRated — aiPick enabled 조건에 사용
@@ -50,7 +51,8 @@ export default function MyTastePage() {
     queryKey: ["aiPick", user?.id],
     queryFn: getAiPickRecommendations,
     enabled: isAuthenticated && totalRated >= MIN_RATINGS_FOR_ANALYSIS,
-    staleTime: 10 * 60 * 1000, // AI 호출 비용 절감
+    staleTime: 30 * 60 * 1000, // 30분 — Claude API 호출 비용 최소화
+    gcTime: 60 * 60 * 1000,   // 60분 — 세션 내내 캐시 유지
   })
 
   if (isLoading) {
