@@ -147,3 +147,126 @@ async def generate_catchphrase(
             print(f"Redis set error: {e}")
 
     return catchphrase, False
+
+
+# [추가] 장르 기반 AI 영화 선택 프롬프트
+AI_PICK_PROMPT = """아래는 영화 목록입니다 (id. 제목 형식):
+{movie_list}
+
+사용자가 선호하는 장르: {genres}
+
+위 목록에서 이 장르를 좋아하는 사용자에게 가장 잘 맞는 영화 5편의 id만 콤마로 구분해서 반환하세요.
+예시: 123, 456, 789, 101, 202
+숫자 id만 반환하세요."""
+
+
+async def pick_movies_by_genre(
+    movie_list: list[dict],  # [{"id": int, "title": str}, ...]
+    top_genres: list[str],
+) -> list[int]:
+    """
+    [추가] Claude API로 장르 취향 기반 영화 5편 선택
+    - movie_list: id, title만 포함된 후보 영화 목록 (DB 1차 필터링 결과)
+    - top_genres: 사용자 선호 장르 리스트
+    - 반환: Claude가 선택한 영화 id 리스트 (최대 5개)
+    - API 실패 시 앞 5개 반환 (fallback)
+    """
+    # API 키 없으면 fallback
+    if not settings.ANTHROPIC_API_KEY:
+        print("Anthropic API key not configured, using fallback")
+        return [m["id"] for m in movie_list[:5]]
+
+    try:
+        # [추가] 영화 목록 포맷: "id. 제목" 형태
+        formatted = "\n".join(f"{m['id']}. {m['title']}" for m in movie_list)
+        genres_str = ", ".join(top_genres) if top_genres else "알 수 없음"
+
+        prompt = AI_PICK_PROMPT.format(
+            movie_list=formatted,
+            genres=genres_str,
+        )
+
+        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+
+        # [추가] Claude API 호출 — id만 반환받으므로 max_tokens=50으로 충분
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=50,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        # [추가] 응답 파싱: "123, 456, 789, 101, 202" → [123, 456, 789, 101, 202]
+        raw = message.content[0].text.strip()
+        picked_ids = [int(x.strip()) for x in raw.split(",") if x.strip().isdigit()]
+        return picked_ids[:5]
+
+    except Exception as e:
+        print(f"AI pick error: {e}")
+        # [추가] 실패 시 앞 5개 반환
+        return [m["id"] for m in movie_list[:5]]
+
+
+# [추가] 유사 영화 선택 프롬프트 — 대상 영화 메타정보 기반
+SIMILAR_MOVIES_PROMPT = """기준 영화 정보:
+- 제목: {title}
+- 장르: {genres}
+- 감독: {director}
+- 분위기: {mood}
+
+후보 영화 목록 (id. 제목):
+{movie_list}
+
+이 영화를 좋아한 사람에게 어울리는 영화 5편을 위 목록에서 골라줘.
+반드시 JSON 형식으로 id 배열만 반환해: {{"ids": [id1, id2, id3, id4, id5]}}"""
+
+
+async def pick_similar_movies(
+    base_movie: dict,       # {"title": str, "genres": list, "director": str, "mood": list}
+    movie_list: list[dict], # [{"id": int, "title": str}, ...]
+) -> list[int]:
+    """
+    [추가] Claude API로 기준 영화와 유사한 영화 5편 선택
+    - base_movie: 기준 영화의 메타정보 (장르, 감독, 분위기)
+    - movie_list: DB 1차 필터링된 후보 목록 (id, title만)
+    - 반환: Claude가 선택한 영화 id 리스트 (최대 5개)
+    - API 실패 시 앞 5개 반환 (fallback)
+    """
+    if not settings.ANTHROPIC_API_KEY:
+        return [m["id"] for m in movie_list[:5]]
+
+    try:
+        # [추가] 후보 목록 포맷
+        formatted = "\n".join(f"{m['id']}. {m['title']}" for m in movie_list)
+
+        prompt = SIMILAR_MOVIES_PROMPT.format(
+            title=base_movie.get("title", ""),
+            genres=", ".join(base_movie.get("genres", [])) or "알 수 없음",
+            director=base_movie.get("director", "알 수 없음"),
+            mood=", ".join(base_movie.get("mood", [])) or "알 수 없음",
+            movie_list=formatted,
+        )
+
+        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+
+        # [추가] Claude API 호출 — JSON 응답 요청
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=80,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        # [추가] JSON 파싱: {"ids": [123, 456, ...]} → [123, 456, ...]
+        import json, re
+        raw = message.content[0].text.strip()
+        # 중괄호 블록만 추출 (마크다운 코드블록 방어)
+        match = re.search(r'\{.*\}', raw, re.DOTALL)
+        if match:
+            data = json.loads(match.group())
+            ids = [int(i) for i in data.get("ids", []) if str(i).isdigit()]
+            return ids[:5]
+
+    except Exception as e:
+        print(f"AI similar pick error: {e}")
+
+    # [추가] 실패 시 fallback
+    return [m["id"] for m in movie_list[:5]]

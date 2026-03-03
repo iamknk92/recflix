@@ -13,6 +13,7 @@ import type {
   RatingStats,
 } from "@/types";
 
+// [수정] fetchAPI 내부에서 process.env 직접 접근 대신 이 변수를 활용
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 // Helper function for API calls
@@ -21,7 +22,7 @@ async function fetchAPI<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
+  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -81,6 +82,11 @@ export async function getMovie(id: number): Promise<MovieDetail> {
 
 export async function getSimilarMovies(id: number, limit = 10): Promise<Movie[]> {
   return fetchAPI<Movie[]>(`/movies/${id}/similar?limit=${limit}`);
+}
+
+// [추가] Claude AI 기반 유사 영화 추천
+export async function getAiSimilarMovies(id: number): Promise<Movie[]> {
+  return fetchAPI<Movie[]>(`/recommendations/ai-similar/${id}`);
 }
 
 export async function getGenres(): Promise<Genre[]> {
@@ -267,6 +273,11 @@ export async function getCatchphrase(movieId: number): Promise<CatchphraseRespon
 // 취향 분석 통계
 export const fetchRatingStats = async (): Promise<RatingStats> => {
   return fetchAPI<RatingStats>('/ratings/stats')
+}
+
+// [추가] Claude AI 기반 취향 맞춤 추천
+export async function getAiPickRecommendations(): Promise<Movie[]> {
+  return fetchAPI<Movie[]>("/recommendations/ai-pick");
 }
 
 // MBTI 궁합 추천

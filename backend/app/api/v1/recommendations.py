@@ -777,6 +777,147 @@ def get_personalized_recommendations(
     return [MovieListItem.from_orm_with_genres(m) for m in result]
 
 
+@router.get("/ai-similar/{movie_id}", response_model=List[MovieListItem])
+async def get_ai_similar_movies(
+    movie_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    [추가] Claude AI 기반 유사 영화 추천
+    1. movie_id로 기준 영화 조회 (장르, 감독, 분위기 추출)
+    2. 같은 장르 영화를 DB에서 1차 필터링 (기준 영화 제외, 최대 30편)
+    3. id, title만 Claude API에 전달
+    4. Claude가 선택한 5개 id로 DB 재조회 후 응답
+    """
+    from app.services.llm import pick_similar_movies
+    from sqlalchemy.orm import joinedload
+
+    # [1] 기준 영화 조회 (장르 포함)
+    base = db.query(Movie).options(joinedload(Movie.genres)).filter(Movie.id == movie_id).first()
+    if not base:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="영화를 찾을 수 없습니다.")
+
+    # [1] 기준 영화 메타정보 추출
+    genre_names = [g.name for g in base.genres]
+    mood_keys = list((base.emotion_tags or {}).keys())[:3]  # 상위 분위기 3개
+    base_movie = {
+        "title": base.title_ko or base.title,
+        "genres": genre_names,
+        "director": base.director_ko or base.director or "알 수 없음",
+        "mood": mood_keys,
+    }
+
+    # [2] 같은 장르 영화 1차 필터링 (기준 영화 제외, 최대 30편)
+    if genre_names:
+        raw = (
+            db.query(Movie)
+            .join(Movie.genres)
+            .filter(
+                Genre.name.in_(genre_names),
+                Movie.id != movie_id,          # 기준 영화 본인 제외
+                Movie.weighted_score >= 6.0,
+            )
+            .order_by(desc(Movie.popularity))
+            .limit(30)
+            .all()
+        )
+        # 중복 제거 (다중 장르 매칭 시 동일 영화 중복 가능)
+        seen: set = set()
+        candidates = []
+        for m in raw:
+            if m.id not in seen:
+                seen.add(m.id)
+                candidates.append(m)
+    else:
+        # 장르 없으면 인기 영화로 대체
+        candidates = (
+            db.query(Movie)
+            .filter(Movie.id != movie_id, Movie.weighted_score >= 6.0)
+            .order_by(desc(Movie.popularity))
+            .limit(30)
+            .all()
+        )
+
+    # [3] id, title만 Claude API에 전달
+    movie_input = [{"id": m.id, "title": m.title_ko or m.title} for m in candidates]
+    picked_ids = await pick_similar_movies(base_movie, movie_input)
+
+    # [4] 반환된 id로 DB 재조회 (상세 정보 포함)
+    result_movies = db.query(Movie).filter(Movie.id.in_(picked_ids)).all()
+    movie_map = {m.id: m for m in result_movies}
+    # Claude가 반환한 id 순서 유지
+    ordered = [movie_map[mid] for mid in picked_ids if mid in movie_map]
+
+    return [MovieListItem.from_orm_with_genres(m) for m in ordered]
+
+
+@router.get("/ai-pick", response_model=List[MovieListItem])
+async def get_ai_pick_recommendations(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    [추가] Claude AI 기반 장르 취향 추천
+    1. 찜/평점 기반으로 사용자 선호 장르 추출
+    2. 해당 장르 영화를 DB에서 1차 필터링 (최대 30편)
+    3. id, title만 Claude API에 전달
+    4. Claude가 선택한 5개 id로 DB 재조회 후 응답
+    """
+    from app.services.llm import pick_movies_by_genre
+
+    # [1] 사용자 선호 장르 추출 (찜/평점 기반)
+    _, genre_counts, _ = get_user_preferences(db, current_user)
+    top_genres = [
+        g for g, _ in sorted(genre_counts.items(), key=lambda x: x[1], reverse=True)[:3]
+    ]
+
+    # [2] 선호 장르로 DB 1차 필터링 (최대 30편)
+    if top_genres:
+        raw = (
+            db.query(Movie)
+            .join(Movie.genres)
+            .filter(
+                Genre.name.in_(top_genres),
+                Movie.weighted_score >= 6.0,
+            )
+            .order_by(desc(Movie.popularity))
+            .limit(30)
+            .all()
+        )
+        # 중복 제거 (다중 장르 매칭 시 동일 영화 중복 가능)
+        seen: set = set()
+        candidates = []
+        for m in raw:
+            if m.id not in seen:
+                seen.add(m.id)
+                candidates.append(m)
+    else:
+        # 장르 정보 없으면 인기 영화 30편으로 대체
+        candidates = (
+            db.query(Movie)
+            .filter(Movie.weighted_score >= 6.0)
+            .order_by(desc(Movie.popularity))
+            .limit(30)
+            .all()
+        )
+
+    # [3] id, title만 Claude API에 전달
+    movie_input = [
+        {"id": m.id, "title": m.title_ko or m.title}
+        for m in candidates
+    ]
+    picked_ids = await pick_movies_by_genre(movie_input, top_genres)
+
+    # [4] 반환된 id로 DB 재조회 (상세 정보 포함)
+    result_movies = db.query(Movie).filter(Movie.id.in_(picked_ids)).all()
+    movie_map = {m.id: m for m in result_movies}
+    # Claude가 반환한 id 순서 유지
+    ordered = [movie_map[mid] for mid in picked_ids if mid in movie_map]
+
+    return [MovieListItem.from_orm_with_genres(m) for m in ordered]
+
+
 @router.get("/match")
 def match_recommendations(
     mbti1: str = Query(..., min_length=4, max_length=4, description="첫 번째 MBTI"),
