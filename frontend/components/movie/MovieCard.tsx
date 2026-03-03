@@ -42,9 +42,10 @@ export default function MovieCard({ movie, index = 0, showQuickView = true }: Mo
                 alt={movie.title_ko || movie.title}
                 fill
                 className="object-cover"
-                loading="lazy"
-                decoding="async"
-                sizes="(max-width: 640px) 140px, (max-width: 1024px) 160px, 180px"
+                // [추가] 첫 번째 이미지만 priority (LCP 최적화), 나머지는 자동 lazy
+                priority={index === 0}
+                // [수정] sizes — 모바일 50vw, 데스크톱 342px
+                sizes="(max-width: 768px) 50vw, 342px"
                 placeholder="blur"
                 blurDataURL={POSTER_BLUR_URL}
                 onError={() => setImageError(true)}
@@ -58,19 +59,35 @@ export default function MovieCard({ movie, index = 0, showQuickView = true }: Mo
             )}
 
             {/* Hover overlay */}
-            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center">
+            {/* [수정] style로 직접 강제 — Tailwind 우선순위 문제 우회 */}
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center"
+              style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+            >
               <div className="text-center p-4">
-                <div className="flex items-center justify-center space-x-1 text-yellow-400 mb-2">
+                {/* [수정] 별점 — style로 color, textShadow 직접 강제 */}
+                <div
+                  className="flex items-center justify-center space-x-1 mb-2"
+                  style={{ color: '#ffffff', textShadow: '0 2px 6px rgba(0,0,0,1)' }}
+                >
                   <Star className="w-5 h-5 fill-current" />
                   <span className="font-medium">{movie.vote_average.toFixed(1)}</span>
                 </div>
-                <p className="text-sm text-white/80 mb-3">상세보기</p>
+                {/* [수정] 상세보기 — style로 color, textShadow 직접 강제 */}
+                <p
+                  className="text-sm mb-3"
+                  style={{ color: '#ffffff', textShadow: '0 2px 6px rgba(0,0,0,1)' }}
+                >
+                  상세보기
+                </p>
 
                 {/* Quick View Button */}
                 {showQuickView && (
                   <button
                     onClick={handleQuickView}
-                    className="flex items-center space-x-1 px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-full text-xs text-white transition"
+                    // [수정] style로 color, borderColor, textShadow 직접 강제
+                    className="flex items-center space-x-1 px-3 py-1.5 bg-white/20 hover:bg-white/30 border rounded-full text-xs font-bold transition"
+                    style={{ color: '#ffffff', borderColor: '#ffffff', textShadow: '0 1px 4px rgba(0,0,0,1)' }}
                   >
                     <Eye className="w-3.5 h-3.5" />
                     <span>미리보기</span>
