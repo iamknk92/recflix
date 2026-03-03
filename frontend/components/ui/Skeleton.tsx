@@ -58,7 +58,8 @@ export function MovieGridSkeleton({ count = 24 }: { count?: number }) {
 
 export function MovieRowSkeleton({ count = 7 }: { count?: number }) {
   return (
-    <div className="flex space-x-3 overflow-hidden">
+    // min-h로 실제 row 높이와 일치 → CLS 방지
+    <div className="flex space-x-3 overflow-hidden min-h-[230px]">
       {Array.from({ length: count }).map((_, i) => (
         <MovieCardSkeleton key={i} index={i} />
       ))}

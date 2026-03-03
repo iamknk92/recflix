@@ -188,6 +188,7 @@ export default function MovieDetailPage() {
                     src={getImageUrl(movie.poster_path, "w342")}
                     alt={displayTitle}
                     fill
+                    priority
                     className="object-cover"
                     placeholder="blur"
                     blurDataURL={POSTER_BLUR_URL}
@@ -212,6 +213,7 @@ export default function MovieDetailPage() {
                     src={getImageUrl(movie.poster_path, "w500")}
                     alt={displayTitle}
                     fill
+                    priority
                     className="object-cover"
                     placeholder="blur"
                     blurDataURL={POSTER_BLUR_URL}
@@ -427,14 +429,14 @@ export default function MovieDetailPage() {
                   ✨ AI가 고른 비슷한 영화
                 </h2>
                 {aiSimilarQuery.isLoading ? (
-                  // AI 로딩 중 스켈레톤
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  // AI 로딩 중 스켈레톤 — min-h로 CLS 방지
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 min-h-[260px]">
                     {[...Array(5)].map((_, i) => (
                       <div key={i} className="aspect-[2/3] bg-surface-card rounded-xl animate-pulse" />
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 min-h-[260px]">
                     {aiSimilar.map((m, i) => (
                       <MovieCard key={m.id} movie={m} index={i} />
                     ))}
