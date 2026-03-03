@@ -9,6 +9,7 @@ import { useAuthStore } from "@/stores/authStore"
 import StatsSummaryCards from "@/components/stats/StatsSummaryCards"
 import TopCreatorsSection from "@/components/stats/TopCreatorsSection"
 import MovieCard from "@/components/movie/MovieCard"
+import { AiMovieCardSkeleton } from "@/components/ui/Skeleton"
 
 // recharts 번들을 초기 로드에서 분리 → TBT/LCP 개선
 const ChartSkeleton = ({ className }: { className: string }) => (
@@ -196,20 +197,12 @@ export default function MyTastePage() {
             className="mt-8"
           >
             <h2 className="text-xl font-bold text-content-primary mb-4">✨ AI가 고른 취향 저격 영화</h2>
-            {aiPickQuery.isLoading ? (
-              // 로딩 중 스켈레톤 5개 — min-h로 CLS 방지
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 min-h-[280px]">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="aspect-[2/3] bg-surface-card rounded-xl animate-pulse" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 min-h-[280px]">
-                {aiPickQuery.data!.map((movie, i) => (
-                  <MovieCard key={movie.id} movie={movie} index={i} />
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 min-h-[280px]">
+              {aiPickQuery.isLoading
+                ? [...Array(5)].map((_, i) => <AiMovieCardSkeleton key={i} index={i} />)
+                : aiPickQuery.data!.map((movie, i) => <MovieCard key={movie.id} movie={movie} index={i} />)
+              }
+            </div>
           </motion.div>
         )}
       </div>

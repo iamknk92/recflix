@@ -24,7 +24,7 @@ import { getImageUrl, formatRuntime, formatDate, POSTER_BLUR_URL } from "@/lib/u
 import { useInteractionStore } from "@/stores/interactionStore";
 import { useAuthStore } from "@/stores/authStore";
 import MovieCard from "@/components/movie/MovieCard";
-import { Skeleton } from "@/components/ui/Skeleton";
+import { Skeleton, AiMovieCardSkeleton } from "@/components/ui/Skeleton";
 import type { MovieDetail, Movie, Genre } from "@/types";
 
 // [추가] genre 타입 가드 — Movie.genres가 string[] 이지만 런타임에 Genre 객체가 올 수 있음
@@ -435,20 +435,12 @@ export default function MovieDetailPage() {
                 <h2 className="text-xl font-semibold text-content-primary mb-4">
                   ✨ AI가 고른 비슷한 영화
                 </h2>
-                {aiSimilarQuery.isLoading ? (
-                  // AI 로딩 중 스켈레톤 — min-h로 CLS 방지
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 min-h-[260px]">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="aspect-[2/3] bg-surface-card rounded-xl animate-pulse" />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 min-h-[260px]">
-                    {aiSimilar.map((m, i) => (
-                      <MovieCard key={m.id} movie={m} index={i} />
-                    ))}
-                  </div>
-                )}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 min-h-[260px]">
+                  {aiSimilarQuery.isLoading
+                    ? [...Array(5)].map((_, i) => <AiMovieCardSkeleton key={i} index={i} />)
+                    : aiSimilar.map((m, i) => <MovieCard key={m.id} movie={m} index={i} />)
+                  }
+                </div>
               </motion.section>
             )}
           </div>

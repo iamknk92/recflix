@@ -56,6 +56,25 @@ export function MovieGridSkeleton({ count = 24 }: { count?: number }) {
   );
 }
 
+// AI 추천 섹션용 — MovieCard(w-full, aspect-[2/3], 제목, 날짜/장르)와 동일한 구조
+export function AiMovieCardSkeleton({ index = 0 }: { index?: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.07, duration: 0.35, ease: "easeOut" }}
+      className="w-full"
+    >
+      {/* 포스터 영역 — MovieCard의 rounded-xl, aspect-[2/3] 일치 */}
+      <Skeleton className="aspect-[2/3] w-full rounded-xl" />
+      {/* 제목 줄 */}
+      <Skeleton className="mt-2 h-4 w-3/4 mx-auto" />
+      {/* 날짜·장르 줄 */}
+      <Skeleton className="mt-1 h-3 w-1/2 mx-auto" />
+    </motion.div>
+  );
+}
+
 export function MovieRowSkeleton({ count = 7 }: { count?: number }) {
   return (
     // min-h로 실제 row 높이와 일치 → CLS 방지
