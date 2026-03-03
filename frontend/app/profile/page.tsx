@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/authStore";
 import { getMBTIColor } from "@/lib/utils";
 import type { MBTIType } from "@/types";
@@ -17,7 +18,11 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, fetchUser, updateMBTI, logout } = useAuthStore();
   const [selectedMBTI, setSelectedMBTI] = useState("");
-  const [saving, setSaving] = useState(false);
+
+  const { mutate: saveMBTI, isPending: saving } = useMutation({
+    mutationFn: (mbti: string) => updateMBTI(mbti),
+    onError: (error) => console.error("Failed to update MBTI:", error),
+  });
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -34,16 +39,9 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const handleMBTIChange = async (mbti: string) => {
+  const handleMBTIChange = (mbti: string) => {
     setSelectedMBTI(mbti);
-    setSaving(true);
-    try {
-      await updateMBTI(mbti);
-    } catch (error) {
-      console.error("Failed to update MBTI:", error);
-    } finally {
-      setSaving(false);
-    }
+    saveMBTI(mbti);
   };
 
   if (!user) {
