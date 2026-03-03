@@ -31,15 +31,15 @@
 | 경로 | 타입 | 데이터 fetch |
 |------|------|-------------|
 | `/` | Static | `useQuery` (TanStack) |
-| `/movies` | Static | `useState/useEffect` + `useInfiniteScroll` |
-| `/movies/[id]` | Dynamic | `useState/useEffect` |
-| `/people/[id]` | Dynamic | `useState/useEffect` |
+| `/movies` | Static | `useQuery` + `useInfiniteQuery` 듀얼 모드 (TanStack) |
+| `/movies/[id]` | Dynamic | `useQuery` × 3 + AI 유사 영화 섹션 (TanStack) |
+| `/people/[id]` | Dynamic | `useQuery` (TanStack) |
 | `/search` | Static | `useInfiniteQuery` (TanStack) + 정렬(인기/평점/최신/오래된) |
 | `/favorites` | Static | `useInfiniteQuery + useMutation` (TanStack) |
 | `/ratings` | Static | `useInfiniteQuery + useMutation` (TanStack) |
-| `/my-taste` | Static | `useState/useEffect` |
-| `/match` | Static | `useState/useEffect` |
-| `/profile` | Static | `useState/useEffect` |
+| `/my-taste` | Static | `useQuery` × 2 (TanStack) + AI Pick 섹션 |
+| `/match` | Static | `useMutation` (TanStack) |
+| `/profile` | Static | `useMutation` (MBTI) + zustand (auth) |
 | `/login` `/signup` | Static | form 전용 |
 | `/offline` | Static | PWA fallback |
 
